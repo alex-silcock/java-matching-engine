@@ -16,9 +16,18 @@ public class OrderBook {
         return this.ticker;
     }
 
+    public static void add(Order order) {
+        // check in ticker, now we need a listener to listen to the orders and create a new OrderBook if book doesn't
+        // exist
+
+        return;
+    }
+
     public static void main (String args[]) {
         OrderBook book = new OrderBook("123");
         String a = book.getInstrument();
-        System.out.println(a);
+
+        Order order = new Order("AAPL", 1, "BUY");
+        OrderBook.add(order);
     }
 }
