@@ -1,27 +1,29 @@
 package utils;
 import java.util.*;
 import java.sql.Timestamp;
-// TODO - Create this order which is a hashset
-public class Order {
+public class Order implements Comparable<Order>{
 
     public final String ticker;
-    private final long size;
+    private final double size;
     private final Timestamp orderTime;
     private final UUID tradeId;
     private final String side;
+    private final  double price;
 
-    public Order(String ticker, long size, String side) {
+
+    public Order(String ticker, double size, String side, double price) {
         this.ticker = ticker;
         this.tradeId = UUID.randomUUID();
         this.orderTime = new Timestamp(System.currentTimeMillis());
         this.size = size;
         this.side = side;
+        this.price = price;
     }
     public String getTicker() {
         return this.ticker;
     }
 
-    public long getRemainingQuantity() {
+    public double getRemainingQuantity() {
         return this.size;
     }
 
@@ -36,8 +38,21 @@ public class Order {
     public Timestamp getOrderTime() {
         return this.orderTime;
     }
+
+    public double getOrderPrice() {
+        return this.price;
+    }
+
+    public double getOrderSize() {
+        return this.size;
+    }
     public static void main(String args[]) {
-        Order order = new Order("APPL", 1, "BUY");
+        Order order = new Order("APPL", 1, "BUY", 1);
         System.out.println(order.getRemainingQuantity());
+    }
+
+    @Override
+    public int compareTo(Order o) {
+        return Double.compare(this.price, o.price);
     }
 }
