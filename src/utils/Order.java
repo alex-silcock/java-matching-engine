@@ -53,6 +53,9 @@ public class Order implements Comparable<Order>{
 
     @Override
     public int compareTo(Order o) {
+        if (this.getOrderPrice() == o.getOrderPrice()) {
+            return this.getOrderTime().compareTo(o.getOrderTime());
+        }
         return Double.compare(this.price, o.price);
     }
 }
