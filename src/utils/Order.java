@@ -4,11 +4,11 @@ import java.sql.Timestamp;
 public class Order implements Comparable<Order>{
 
     public final String ticker;
-    private final double size;
+    private double size;
     private final Timestamp orderTime;
     private final UUID tradeId;
     private final String side;
-    private final  double price;
+    private final double price;
 
 
     public Order(String ticker, double size, String side, double price) {
@@ -46,9 +46,9 @@ public class Order implements Comparable<Order>{
     public double getOrderSize() {
         return this.size;
     }
-    public static void main(String args[]) {
-        Order order = new Order("APPL", 1, "BUY", 1);
-        System.out.println(order.getRemainingQuantity());
+
+    public void setQuantity(double newQty) {
+        this.size = newQty;
     }
 
     @Override
@@ -57,5 +57,10 @@ public class Order implements Comparable<Order>{
             return this.getOrderTime().compareTo(o.getOrderTime());
         }
         return Double.compare(this.price, o.price);
+    }
+
+    public static void main(String[] args) {
+        Order order = new Order("APPL", 1, "BUY", 1);
+        System.out.println(order.getRemainingQuantity());
     }
 }
