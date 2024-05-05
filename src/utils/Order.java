@@ -53,14 +53,28 @@ public class Order implements Comparable<Order>{
 
     @Override
     public int compareTo(Order o) {
-        if (this.getOrderPrice() == o.getOrderPrice()) {
-            return this.getOrderTime().compareTo(o.getOrderTime());
+        int priceComparison = Double.compare(this.price, o.price);
+        if (priceComparison != 0) {
+            if (Objects.equals(o.getSide(), "BUY")) {
+                return priceComparison * -1;
+            } else {
+                return priceComparison;
+            }
         }
-        return Double.compare(this.price, o.price);
+
+        int timestampComparison = this.getOrderTime().compareTo(o.getOrderTime());
+        if (timestampComparison != 0) {
+            return timestampComparison;
+        }
+        // default to return on UUID
+        return this.getTradeId().compareTo(o.getTradeId());
     }
 
     public static void main(String[] args) {
         Order order = new Order("APPL", 1, "BUY", 1);
-        System.out.println(order.getRemainingQuantity());
+        Order order2 = new Order("APPL", 2, "BUY", 1);
+        System.out.println(order.getOrderTime());
+        System.out.println(order2.getOrderTime());
+        System.out.println(order.compareTo(order2));
     }
 }
