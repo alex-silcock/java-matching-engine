@@ -1,4 +1,5 @@
 package utils;
+import javax.sound.midi.SysexMessage;
 import java.util.*;
 
 public class OrderBook {
@@ -9,7 +10,7 @@ public class OrderBook {
     public OrderBook(String ticker) {
         this.ticker = ticker;
         this.asks = new TreeSet<>();
-        this.bids = new TreeSet<>(Comparator.reverseOrder());
+        this.bids = new TreeSet<>();
     }
 
     public String getInstrument() {
@@ -45,20 +46,21 @@ public class OrderBook {
             return -1;
         }
     }
-    public ArrayList<Order> add(Order order) {
-        if (order == null) {return new ArrayList<Order>();}
+    public ArrayList<Order> add(Order incomingOrder) {
+        if (incomingOrder == null) {return null ;}
 
-        ArrayList<Order> ordersTraded = new ArrayList<Order>();
+        ArrayList<Order> ordersTraded = new ArrayList<>();
 
-        if (Objects.equals(order.getSide(), "BUY")) {
+        if (Objects.equals(incomingOrder.getSide(), "BUY")) {
             double bestOffer = this.getBestOffer();
-            double incomingOrderPrice = order.getOrderPrice();
+            Order bestOfferOrder = this.getBestOfferOrder();
+            double incomingOrderPrice = incomingOrder.getOrderPrice();
 
-            if (bestOffer == -1 || incomingOrderPrice < bestOffer) {
-                this.bids.add(order);
+            if (bestOfferOrder == null || incomingOrderPrice < bestOffer) {
+                this.bids.add(incomingOrder);
 
             } else if (incomingOrderPrice >= bestOffer) {
-                double quantityLeftToTrade = order.getRemainingQuantity();
+                double quantityLeftToTrade = incomingOrder.getRemainingQuantity();
                 Order headAskOrder = this.asks.first();
 
                 while (quantityLeftToTrade > 0) {
@@ -67,13 +69,18 @@ public class OrderBook {
                     if (quantityLeftToTrade >= headAskOrderQty) {
                         ordersTraded.add(this.asks.pollFirst());
                         quantityLeftToTrade -= headAskOrderQty;
-                        order.setQuantity(quantityLeftToTrade);
-                        if (this.getBestOffer() != -1) {
-                            headAskOrder = this.asks.first();
+                        incomingOrder.setQuantity(quantityLeftToTrade);
+
+                        bestOfferOrder = this.getBestOfferOrder();
+                        if (bestOfferOrder != null) {
+                            headAskOrder = bestOfferOrder;
+                        } else {
+                            this.bids.add(incomingOrder);
+                            return ordersTraded;
                         }
                     } else {
                         ordersTraded.add(this.asks.first());
-                        double newQty = headAskOrder.getRemainingQuantity() - order.getRemainingQuantity();
+                        double newQty = headAskOrder.getRemainingQuantity() - incomingOrder.getRemainingQuantity();
                         headAskOrder.setQuantity(newQty);
                         quantityLeftToTrade = 0;
                     }
@@ -83,29 +90,66 @@ public class OrderBook {
             }
         }
         else {
-            this.asks.add(order);
+            double bestBid = this.getBestBid();
+            double incomingOrderPrice = incomingOrder.getOrderPrice();
+
+            if (bestBid == -1 || incomingOrderPrice > bestBid) {
+                this.asks.add(incomingOrder);
+
+            } else if (incomingOrderPrice <= bestBid) {
+                double quantityLeftToTrade = incomingOrder.getRemainingQuantity();
+                Order headBidOrder = this.bids.first();
+
+                while (quantityLeftToTrade > 0) {
+                    double headBidOrderQty = headBidOrder.getRemainingQuantity();
+
+                    if (quantityLeftToTrade >= headBidOrderQty) {
+                        ordersTraded.add(this.bids.pollFirst());
+                        quantityLeftToTrade -= headBidOrderQty;
+                        incomingOrder.setQuantity(quantityLeftToTrade);
+
+                        Order bestBidOrder = this.getBestBidOrder();
+                        if (bestBidOrder != null) {
+                            headBidOrder = bestBidOrder;
+                        } else {
+                            this.asks.add(incomingOrder);
+                            return ordersTraded;
+                        }
+                    } else {
+                        ordersTraded.add(headBidOrder);
+                        double newQty = headBidOrder.getRemainingQuantity() - incomingOrder.getRemainingQuantity();
+                        headBidOrder.setQuantity(newQty);
+                        quantityLeftToTrade = 0;
+                    }
+
+                }
+
+            }
         }
         return ordersTraded;
     }
 
     public void printBook() {
-        for (Order o : this.asks) {
-            System.out.println("Side: SELL - Order Time: " + o.getOrderTime().toString() + " - Order Price: " + o.getOrderPrice() + " - Order Size " + o.getOrderSize());
+
+        NavigableSet<Order> reverseAsks = this.asks.descendingSet();
+        for (Order o : reverseAsks) {
+            System.out.println("Side: SELL - Order Time: " + o.getOrderTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
         }
+//        NavigableSet<Order> reverseBids = this.bids.descendingSet();
         for (Order o : this.bids) {
-            System.out.println("Side: BUY - Order Time: " + o.getOrderTime().toString() + " - Order Price: " + o.getOrderPrice() + " - Order Size " + o.getOrderSize());
+            System.out.println("Side: BUY  - Order Time: "  + o.getOrderTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
         }
         System.out.println();
     }
 
 
     public static void main (String[] args) {
-        OrderBook book = new OrderBook("123");
-        String a = book.getInstrument();
-        book.getBestBidOrder();
-        book.add(new Order("AAPL", 5, "SELL", 1));
-        book.add(new Order("AAPL", 1, "BUY", 0.5));
-        book.add(new Order("AAPL", 1, "BUY", 1));
+        OrderBook book = new OrderBook("AAPL");
+        book.add(new Order("AAPL", 3, "SELL", 2));
+        book.add(new Order("AAPL", 6, "BUY", 1.5));
+        book.add(new Order("AAPL", 2, "SELL", 1.5));
+        book.add(new Order("AAPL", 1.5, "SELL", 1.5));
+        book.add(new Order("AAPL", 2, "BUY", 1.5));
         book.printBook();
     }
 }
