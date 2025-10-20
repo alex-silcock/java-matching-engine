@@ -1,7 +1,7 @@
-package test;
+package matchingengine.test;
 import org.junit.Test;
-import utils.Order;
-import utils.OrderBook;
+import .main.java.matchingengine.utils.Order;
+import .main.java.matchingengine.utils.OrderBook;
 
 import static org.junit.Assert.assertEquals;
 public class OrderTest {
