@@ -1,14 +1,18 @@
 package matchingengine.utils;
 import java.util.*;
 import java.sql.Timestamp;
-public class Order implements Comparable<Order>{
+import java.io.Serializable;
 
+public class Order implements Comparable<Order>, Serializable {
+
+    private static final long serialVersionUID = 1L;
     public final String ticker;
     private double size;
     private final Timestamp orderTime;
     private final UUID tradeId;
     private final String side;
     private final double price;
+    private Timestamp orderReceivedTime;
 
 
     public Order(String ticker, double size, String side, double price) {
@@ -51,6 +55,14 @@ public class Order implements Comparable<Order>{
         this.size = newQty;
     }
 
+    public void setOrderReceivedTime() {
+        this.orderReceivedTime = new Timestamp(System.currentTimeMillis());
+    }
+
+    public Timestamp getOrderReceivedTime() {
+        return this.orderReceivedTime;
+    }
+
     @Override
     public int compareTo(Order o) {
         int priceComparison = Double.compare(this.price, o.price);
@@ -68,6 +80,11 @@ public class Order implements Comparable<Order>{
         }
         // default to return on UUID
         return this.getTradeId().compareTo(o.getTradeId());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Order[%s %.2f %s %.2f]", ticker, size, side, price);
     }
 
     public static void main(String[] args) {

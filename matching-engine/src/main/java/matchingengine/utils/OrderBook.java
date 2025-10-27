@@ -1,6 +1,8 @@
 package matchingengine.utils;
 import javax.sound.midi.SysexMessage;
 import java.util.*;
+import java.sql.Timestamp;
+
 
 public class OrderBook {
     private final String ticker;
@@ -46,9 +48,25 @@ public class OrderBook {
             return -1;
         }
     }
-    public ArrayList<Order> add(Order incomingOrder) {
-        if (incomingOrder == null) {return null ;}
 
+    public double getMidPrice() {
+        double bestBid = this.getBestBid();
+        double bestOffer = this.getBestOffer();
+
+        if (bestBid == -1 && bestOffer == -1) {
+            return -1;
+        } else if (bestBid == -1) {
+            return bestOffer;
+        } else if (bestOffer == -1) {
+            return bestBid;
+        } else {
+            return (bestBid + bestOffer) / 2;
+        }
+    }
+
+    public ArrayList<Order> add(Order incomingOrder) {
+        
+        if (incomingOrder == null) {return null ;}
         ArrayList<Order> ordersTraded = new ArrayList<>();
 
         if (Objects.equals(incomingOrder.getSide(), "BUY")) {
@@ -133,12 +151,14 @@ public class OrderBook {
 
         NavigableSet<Order> reverseAsks = this.asks.descendingSet();
         for (Order o : reverseAsks) {
-            System.out.println("Side: SELL - Order Time: " + o.getOrderTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
+            System.out.println("Side: SELL - Order Received At: " + o.getOrderReceivedTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
         }
 //        NavigableSet<Order> reverseBids = this.bids.descendingSet();
         for (Order o : this.bids) {
-            System.out.println("Side: BUY  - Order Time: "  + o.getOrderTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
+            System.out.println("Side: BUY  - Order Received At: "  + o.getOrderReceivedTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
         }
+        System.out.println();
+        System.out.println("Mid Price: " + this.getMidPrice());
         System.out.println();
     }
 
