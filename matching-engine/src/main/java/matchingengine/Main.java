@@ -4,17 +4,14 @@ import matchingengine.utils.Order;
 import matchingengine.utils.MarketListener;
 import java.io.*;
 import java.net.*;
+import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
 
         int port = 1234;
-        // new Thread(() -> new MarketListener(port).startListening()).start();
-
-        // try {
-        //     Thread.sleep(500);
-
-        // } catch (InterruptedException ignored) {}
 
         try (Socket socket = new Socket("localhost", port)) {
             System.out.println("[Main] Connected to server");
@@ -22,31 +19,25 @@ public class Main {
             out.flush();
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
-            
+            int max = 20;
+            int min = 1;
+            Random rand = new Random();
+            List<Order> orders = new ArrayList<>();
 
-            Order o1 = new Order("AAPL", 3, "SELL", 2);
-            Order o2 = new Order("AAPL", 6, "SELL", 1.5);
-            Order o3 = new Order("AAPL", 2, "SELL", 1.5);
-            Order o4 = new Order("AAPL", 1.5, "SELL", 1.5);
-            Order o5 = new Order("AAPL", 2, "SELL", 1.5);
-            
-            Order o6 = new Order("AAPL", 10, "BUY", 2);
-            Order o7 = new Order("AAPL", 10, "BUY", 2.5);
+            for (int i=0;i<1000;i++) {
+                double qty = min + rand.nextFloat() * (max - min);
+                double price = min + rand.nextFloat() * (max - min);
+                String side = Math.random() < 0.5 ? "BUY" : "SELL";
 
-            Order[] orders = {o1, o2, o3, o4, o5, o6, o7};
+                qty = Math.round(qty * 100.0) / 100.0;
+                price = Math.round(price * 100.0) / 100.0;
 
-            for (Order order : orders) {
-                
+                Order order = new Order("AAPL", qty, side, price);
                 out.writeObject(order);
                 out.flush();
                 Object response = in.readObject();
-                System.out.println("[Main] Server response: " + response);
-                Thread.sleep(1000);
+                Thread.sleep(200);
             }
-            // out.writeObject();
-            
-            
-
 
 
         } catch (Exception e){
