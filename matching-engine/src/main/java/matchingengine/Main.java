@@ -23,8 +23,9 @@ public class Main {
             int min = 1;
             Random rand = new Random();
             List<Order> orders = new ArrayList<>();
+            int sentCount = 0;
 
-            for (int i=0;i<1000;i++) {
+            for (int i=0;i<10;i++) {
                 double qty = min + rand.nextFloat() * (max - min);
                 double price = min + rand.nextFloat() * (max - min);
                 String side = Math.random() < 0.5 ? "BUY" : "SELL";
@@ -36,27 +37,26 @@ public class Main {
                 out.writeObject(order);
                 out.flush();
                 Object response = in.readObject();
-                Thread.sleep(200);
+                Thread.sleep(1);
+
+                if (i % 100 == 0) {
+                    sentCount += 100;
+                    System.out.println(String.format("Sent %d orders", sentCount));
+                }
             }
+
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            
 
 
         } catch (Exception e){
             return;
         }
-
-
-
-
-        // OrderBook book = new OrderBook("AAPL");
-        // book.add(new Order("AAPL", 3, "SELL", 2));
-        // book.add(new Order("AAPL", 6, "SELL", 1.5));
-        // book.add(new Order("AAPL", 2, "SELL", 1.5));
-        // book.add(new Order("AAPL", 1.5, "SELL", 1.5));
-        // book.add(new Order("AAPL", 2, "SELL", 1.5));
-        // book.printBook();
-        // book.add(new Order("AAPL", 10, "BUY", 2));
-        // book.add(new Order("AAPL", 10, "BUY", 2.5));
-        // System.out.println("After adding BUY order:");
-        // book.printBook();
     }
 }

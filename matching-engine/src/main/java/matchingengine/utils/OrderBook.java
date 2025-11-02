@@ -6,13 +6,21 @@ import java.sql.Timestamp;
 
 public class OrderBook {
     private final String ticker;
-    private final TreeSet<Order> asks;
-    private final TreeSet<Order> bids;
+    private final NavigableSet<Order> asks;
+    private final NavigableSet<Order> bids;
 
     public OrderBook(String ticker) {
         this.ticker = ticker;
         this.asks = new TreeSet<>();
         this.bids = new TreeSet<>();
+    }
+
+    public NavigableSet<Order> getBids() {
+        return this.bids;
+    }
+
+    public NavigableSet<Order> getAsks() {
+        return this.asks;
     }
 
     public String getInstrument() {
@@ -65,7 +73,7 @@ public class OrderBook {
     }
 
     public ArrayList<Order> add(Order incomingOrder) {
-        
+
         if (incomingOrder == null) {return null ;}
         ArrayList<Order> ordersTraded = new ArrayList<>();
 
@@ -161,7 +169,6 @@ public class OrderBook {
         System.out.println("Mid Price: " + this.getMidPrice());
         System.out.println();
     }
-
 
     // public static void main (String[] args) {
     //     OrderBook book = new OrderBook("AAPL");
