@@ -74,7 +74,7 @@ public class MarketListener {
                         order.getOrderPrice(),
                         order.getRemainingQuantity()
                     };
-                    publishToTp("trades", tpObj);
+                    publishToTp("orders", tpObj);
 
                     out.writeObject("ACK: " + order);
                     out.flush();
