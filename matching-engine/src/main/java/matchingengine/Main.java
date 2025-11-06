@@ -25,7 +25,7 @@ public class Main {
             List<Order> orders = new ArrayList<>();
             int sentCount = 0;
 
-            for (int i=0;i<10;i++) {
+            for (int i=0;i<100;i++) {
                 double qty = min + rand.nextFloat() * (max - min);
                 double price = min + rand.nextFloat() * (max - min);
                 String side = Math.random() < 0.5 ? "BUY" : "SELL";
@@ -45,13 +45,13 @@ public class Main {
                 }
             }
 
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
+            // while (true) {
+            //     try {
+            //         Thread.sleep(1000);
+            //     } catch (InterruptedException e) {
+            //         break;
+            //     }
+            // }
             
 
 
