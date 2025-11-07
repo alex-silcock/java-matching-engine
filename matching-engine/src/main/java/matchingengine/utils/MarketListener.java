@@ -1,8 +1,10 @@
 package matchingengine.utils;
 import matchingengine.utils.Order;
 import matchingengine.utils.OrderBook;
+import matchingengine.utils.KDBHandler;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import com.kx.c;
 
 public class MarketListener {
@@ -10,30 +12,12 @@ public class MarketListener {
 
     private final int port;
     public OrderBook orderBook;
-    private static c kdbConn;
-    // public L2BookWrapper l2Wrapper;
+    private static KDBHandler kh;
 
     public MarketListener(int port) {
         this.port = port;
         this.orderBook = new OrderBook("AAPL");
-        // this.l2Wrapper = new L2BookWrapper(orderBook);
-    }
-
-    static {
-        try {
-            kdbConn = new c("localhost", 5010);
-            System.out.println("Connected to TP on port 5010");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void publishToTp(String table, Object[] row) {
-        try {
-            kdbConn.ks(".u.upd", table, row);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.kh = new KDBHandler("tp");
     }
 
     public void startListening() {
@@ -64,17 +48,26 @@ public class MarketListener {
                 if (obj instanceof Order order) {
                     System.out.println("[MarketListener] Received: " + order);
                     order.setOrderReceivedTime();
-                    orderBook.add(order);
-                    // this.orderBook.printBook();
-                    Object[] tpObj = new Object[] {
-                        // System.currentTimeMillis(),
+                    ArrayList<Order> ordersTraded = orderBook.add(order);
+                    
+                    Object[] tpObjOrder = new Object[] {
                         new c.Timespan(),
                         order.getTicker(),
                         order.getSide().charAt(0),
                         order.getOrderPrice(),
                         order.getRemainingQuantity()
                     };
-                    publishToTp("orders", tpObj);
+                    kh.publishToTp("orders", tpObjOrder);
+
+                    for (Order trade : ordersTraded) {
+                        Object[] tpObjTrade = new Object[] {
+                            new c.Timespan(),
+                            trade.getTicker(),
+                            trade.getOrderPrice(),
+                            trade.getRemainingQuantity()
+                        };
+                        kh.publishToTp("trades", tpObjTrade);
+                    }
 
                     out.writeObject("ACK: " + order);
                     out.flush();
