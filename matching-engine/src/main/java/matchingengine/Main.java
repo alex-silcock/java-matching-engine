@@ -4,7 +4,7 @@ import matchingengine.utils.Order;
 import matchingengine.utils.MarketListener;
 import java.io.*;
 import java.net.*;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,14 +21,13 @@ public class Main {
 
             int max = 20;
             int min = 1;
-            Random rand = new Random();
             List<Order> orders = new ArrayList<>();
             int sentCount = 0;
 
             for (int i=0;i<100;i++) {
-                double qty = min + rand.nextFloat() * (max - min);
-                double price = min + rand.nextFloat() * (max - min);
-                Order.Side side = Math.random() < 0.5 ? Order.Side.BUY : Order.Side.SELL;
+                double qty = min + ThreadLocalRandom.current().nextDouble() * (max - min);
+                double price = min + ThreadLocalRandom.current().nextDouble() * (max - min);
+                Order.Side side = ThreadLocalRandom.current().nextDouble() < 0.5 ? Order.Side.BUY : Order.Side.SELL;
 
                 qty = Math.round(qty * 100.0) / 100.0;
                 price = Math.round(price * 100.0) / 100.0;
@@ -44,17 +43,6 @@ public class Main {
                     System.out.println(String.format("Sent %d orders", sentCount));
                 }
             }
-
-            // while (true) {
-            //     try {
-            //         Thread.sleep(1000);
-            //     } catch (InterruptedException e) {
-            //         break;
-            //     }
-            // }
-            
-
-
         } catch (Exception e){
             return;
         }
