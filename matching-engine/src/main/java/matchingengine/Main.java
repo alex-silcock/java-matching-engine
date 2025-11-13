@@ -28,7 +28,7 @@ public class Main {
             for (int i=0;i<100;i++) {
                 double qty = min + rand.nextFloat() * (max - min);
                 double price = min + rand.nextFloat() * (max - min);
-                String side = Math.random() < 0.5 ? "BUY" : "SELL";
+                Order.Side side = Math.random() < 0.5 ? Order.Side.BUY : Order.Side.SELL;
 
                 qty = Math.round(qty * 100.0) / 100.0;
                 price = Math.round(price * 100.0) / 100.0;

@@ -17,7 +17,7 @@ public class MarketListener {
     public MarketListener(int port) {
         this.port = port;
         this.orderBook = new OrderBook("AAPL");
-        this.kh = new KDBHandler("tp");
+        this.kh = new KDBHandler(KDBHandler.KDBTarget.TP);
     }
 
     public void startListening() {

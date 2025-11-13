@@ -7,7 +7,7 @@ import matchingengine.utils.KDBHandler;
 public class L2BookWrapper {
     private static KDBHandler kh;
     public L2BookWrapper() {
-        this.kh = new KDBHandler("rdb");
+        this.kh = new KDBHandler(KDBHandler.KDBTarget.RDB);
     }
 
     public static void main(String[] args) {

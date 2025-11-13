@@ -3,16 +3,28 @@ import com.kx.c;
 
 public class KDBHandler {
 
-    private static c kdbConn;
-    private static int port;
-    private static String target;
+    public enum KDBTarget {
+        TP(5010), RDB(5011);
 
-    public KDBHandler(String target) {
+        private final int port;
+
+        KDBTarget(int port) {
+            this.port = port;
+        }
+
+        public int getPort() {
+            return this.port;
+        }
+    }
+
+    private static c kdbConn;
+    private static KDBTarget target;
+
+    public KDBHandler(KDBTarget target) {
         this.target = target;
-        this.port = (target == "tp") ? 5010 : 5011;
         try {
-            this.kdbConn = new c("localhost", this.port);
-            System.out.println(String.format("Connected to KDB on port %d", this.port));
+            this.kdbConn = new c("localhost", target.getPort());
+            System.out.println(String.format("Connected to KDB on port %d", target.getPort()));
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -38,7 +50,7 @@ public class KDBHandler {
     }
 
     public static void main (String[] args) {
-        KDBHandler kh = new KDBHandler("rdb");
+        KDBHandler kh = new KDBHandler(KDBTarget.RDB);
         System.out.println(kh.query(".l2[`AAPL]"));
     }
 }

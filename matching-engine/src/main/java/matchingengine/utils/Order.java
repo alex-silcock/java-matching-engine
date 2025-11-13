@@ -5,17 +5,26 @@ import java.io.Serializable;
 
 public class Order implements Comparable<Order>, Serializable {
 
+    public enum Side {
+        BUY, SELL;
+
+        @Override
+        public String toString() {
+            return (this == BUY ? "BUY" : "SELL");
+        }
+    }
+
     private static final long serialVersionUID = 1L;
     public final String ticker;
     private double size;
     private final Timestamp orderTime;
     private final UUID tradeId;
-    private final String side;
+    private final Side side;
     private final double price;
     private Timestamp orderReceivedTime;
 
 
-    public Order(String ticker, double size, String side, double price) {
+    public Order(String ticker, double size, Side side, double price) {
         this.ticker = ticker;
         this.tradeId = UUID.randomUUID();
         this.orderTime = new Timestamp(System.currentTimeMillis());
@@ -36,7 +45,7 @@ public class Order implements Comparable<Order>, Serializable {
     }
 
     public String getSide() {
-        return this.side;
+        return this.side.toString();
     }
 
     public Timestamp getOrderTime() {
@@ -85,13 +94,5 @@ public class Order implements Comparable<Order>, Serializable {
     @Override
     public String toString() {
         return String.format("Order[%s %.2f %s %.2f]", ticker, size, side, price);
-    }
-
-    public static void main(String[] args) {
-        Order order = new Order("APPL", 1, "BUY", 1);
-        Order order2 = new Order("APPL", 2, "BUY", 1);
-        System.out.println(order.getOrderTime());
-        System.out.println(order2.getOrderTime());
-        System.out.println(order.compareTo(order2));
     }
 }
