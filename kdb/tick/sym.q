@@ -1,2 +1,2 @@
-orders:([]time:`timespan$(); sym:`g#`symbol$(); side:`symbol$(); price:`float$(); qty:`float$());
-trades:([]time:`timespan$(); sym:`g#`symbol$(); price:`float$(); qty:`float$());
+orders:([]time:`timespan$(); sym:`g#`symbol$(); side:`symbol$(); price:`float$(); qty:`float$(); tradeId:`symbol$());
+trades:([]time:`timespan$(); sym:`g#`symbol$(); price:`float$(); qty:`float$(); idsTraded:(::)!);

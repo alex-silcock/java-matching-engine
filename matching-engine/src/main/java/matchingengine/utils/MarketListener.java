@@ -68,16 +68,20 @@ public class MarketListener {
                         order.getTicker(),
                         order.getSide(),
                         order.getOrderPrice(),
-                        order.getRemainingQuantity()
+                        order.getRemainingQuantity(),
+                        order.getTradeId().toString()
                     };
                     kh.publishToTp("orders", tpObjOrder);
 
                     for (Order trade : ordersTraded) {
+                        String[] tradeIds = new String[] {trade.getTradeId().toString(), order.getTradeId().toString()};
+
                         Object[] tpObjTrade = new Object[] {
                             new c.Timespan(),
                             trade.getTicker(),
                             trade.getOrderPrice(),
-                            trade.getRemainingQuantity()
+                            trade.getRemainingQuantity(),
+                            tradeIds
                         };
                         kh.publishToTp("trades", tpObjTrade);
                     }
