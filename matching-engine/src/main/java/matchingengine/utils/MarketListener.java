@@ -18,7 +18,7 @@ public class MarketListener {
     private final int port;
     public OrderBook orderBook;
     private static KDBHandler kh;
-    private static OrderDecoder decoder;    
+    private static OrderDecoder decoder;
 
     public MarketListener(int port) {
         this.port = port;
@@ -66,7 +66,7 @@ public class MarketListener {
                     Object[] tpObjOrder = new Object[] {
                         new c.Timespan(),
                         order.getTicker(),
-                        order.getSide().charAt(0),
+                        order.getSide(),
                         order.getOrderPrice(),
                         order.getRemainingQuantity()
                     };
