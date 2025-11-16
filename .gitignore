@@ -1,5 +1,4 @@
 target/
-pom.xml
 .DS_Store
 *.log
 *.tmp

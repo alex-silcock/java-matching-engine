@@ -2,6 +2,11 @@ package matchingengine.utils;
 import matchingengine.utils.Order;
 import matchingengine.utils.OrderBook;
 import matchingengine.utils.KDBHandler;
+import baseline.OrderEncoder;
+import baseline.OrderDecoder;
+import java.nio.ByteBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -13,6 +18,7 @@ public class MarketListener {
     private final int port;
     public OrderBook orderBook;
     private static KDBHandler kh;
+    private static OrderDecoder decoder;    
 
     public MarketListener(int port) {
         this.port = port;
@@ -39,14 +45,21 @@ public class MarketListener {
     }
 
     private void handleClient(Socket socket) {
-        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+        try (DataInputStream in = new DataInputStream(socket.getInputStream());
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             
-            Object obj;
-            while ((obj = in.readObject()) != null) {
+            while (true) {
+                int len = in.readInt();
+                byte[] bytes = new byte[len];
+                in.readFully(bytes);
 
-                if (obj instanceof Order order) {
-                    System.out.println("[MarketListener] Received: " + order);
+                UnsafeBuffer buffer = new UnsafeBuffer(bytes);
+                OrderDecoder decoder = new OrderDecoder();
+                decoder.wrap(buffer, 0, OrderDecoder.BLOCK_LENGTH, OrderDecoder.SCHEMA_VERSION);
+
+                Order order = Order.decode(decoder);
+                order.setOrderReceivedTime();
+                System.out.println("[MarketListener] Received: " + order);
                     order.setOrderReceivedTime();
                     ArrayList<Order> ordersTraded = orderBook.add(order);
                     
@@ -69,21 +82,17 @@ public class MarketListener {
                         kh.publishToTp("trades", tpObjTrade);
                     }
 
-                    out.writeObject("ACK: " + order);
+                    out.writeUTF("ACK: " + order);
                     out.flush();
-                }
-
             }
 
         } catch (EOFException e) {
             System.out.println("[MarketListener] Client Disconnected");
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    
     public void onOrderReceived(Order order) {
         this.orderBook.add(order);
     }

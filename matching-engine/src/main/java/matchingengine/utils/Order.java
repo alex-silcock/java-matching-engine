@@ -1,11 +1,16 @@
 package matchingengine.utils;
+import baseline.OrderDecoder;
+import baseline.OrderEncoder;
+import baseline.Side;
+import org.agrona.concurrent.UnsafeBuffer;
+
 import java.util.*;
 import java.sql.Timestamp;
 import java.io.Serializable;
 
 public class Order implements Comparable<Order>, Serializable {
 
-    public enum Side {
+    public enum OrderSide {
         BUY, SELL;
 
         @Override
@@ -18,13 +23,13 @@ public class Order implements Comparable<Order>, Serializable {
     public final String ticker;
     private double size;
     private final Timestamp orderTime;
-    private final UUID tradeId;
-    private final Side side;
+    private final UUID tradeId; // TODO - update this to snowflake ID 
+    private final OrderSide side;
     private final double price;
     private Timestamp orderReceivedTime;
 
 
-    public Order(String ticker, double size, Side side, double price) {
+    public Order(String ticker, double size, OrderSide side, double price) {
         this.ticker = ticker;
         this.tradeId = UUID.randomUUID();
         this.orderTime = new Timestamp(System.currentTimeMillis());
@@ -32,6 +37,32 @@ public class Order implements Comparable<Order>, Serializable {
         this.side = side;
         this.price = price;
     }
+
+    public int encode(UnsafeBuffer buffer, int offset) {
+        OrderEncoder encoder = new OrderEncoder();
+        encoder.wrap(buffer, offset);
+        encoder.ticker(ticker);
+        encoder.size(size);
+        encoder.orderTime(orderTime.getTime());
+        encoder.tradeId().id(tradeId.getLeastSignificantBits());
+        encoder.side(side == OrderSide.BUY ? baseline.Side.BUY : baseline.Side.SELL);
+        encoder.price(price);
+        encoder.orderReceivedTime(-1);
+        return encoder.encodedLength();
+    }
+
+    public static Order decode(OrderDecoder decoder) {
+        String ticker = decoder.ticker();
+        double size = decoder.size();
+        long orderTime = decoder.orderTime();
+        UUID tradeId = new UUID(0, decoder.tradeId().id());
+        OrderSide side = decoder.side() == baseline.Side.BUY ? OrderSide.BUY : OrderSide.SELL;
+        double price = decoder.price();
+        Timestamp orderReceivedTime = new Timestamp(decoder.orderReceivedTime()); // may be some issue here
+        Order order = new Order(ticker, size, side, price);
+        return order;
+    }
+
     public String getTicker() {
         return this.ticker;
     }
