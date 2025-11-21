@@ -421,9 +421,9 @@ public final class OrderDecoder
         return ((short)(buffer.getByte(offset + 28) & 0xFF));
     }
 
-    public Side side()
+    public OrderSide side()
     {
-        return Side.get(((short)(buffer.getByte(offset + 28) & 0xFF)));
+        return OrderSide.get(((short)(buffer.getByte(offset + 28) & 0xFF)));
     }
 
 

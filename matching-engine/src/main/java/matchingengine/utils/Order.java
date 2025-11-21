@@ -1,7 +1,7 @@
 package matchingengine.utils;
 import baseline.OrderDecoder;
 import baseline.OrderEncoder;
-import baseline.Side;
+import baseline.OrderSide;
 import org.agrona.concurrent.UnsafeBuffer;
 
 import java.util.*;
@@ -9,16 +9,6 @@ import java.sql.Timestamp;
 import java.io.Serializable;
 
 public class Order implements Comparable<Order>, Serializable {
-
-    public enum OrderSide {
-        BUY, SELL;
-
-        @Override
-        public String toString() {
-            return (this == BUY ? "BUY" : "SELL");
-        }
-    }
-
     private static final long serialVersionUID = 1L;
     public final String ticker;
     private double size;
@@ -45,7 +35,7 @@ public class Order implements Comparable<Order>, Serializable {
         encoder.size(size);
         encoder.orderTime(orderTime.getTime());
         encoder.tradeId().id(tradeId.getLeastSignificantBits());
-        encoder.side(side == OrderSide.BUY ? baseline.Side.BUY : baseline.Side.SELL);
+        encoder.side(side);
         encoder.price(price);
         encoder.orderReceivedTime(-1);
         return encoder.encodedLength();
@@ -56,7 +46,7 @@ public class Order implements Comparable<Order>, Serializable {
         double size = decoder.size();
         long orderTime = decoder.orderTime();
         UUID tradeId = new UUID(0, decoder.tradeId().id());
-        OrderSide side = decoder.side() == baseline.Side.BUY ? OrderSide.BUY : OrderSide.SELL;
+        OrderSide side = decoder.side();
         double price = decoder.price();
         Timestamp orderReceivedTime = new Timestamp(decoder.orderReceivedTime()); // may be some issue here
         Order order = new Order(ticker, size, side, price);

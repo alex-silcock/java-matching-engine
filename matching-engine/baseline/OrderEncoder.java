@@ -394,7 +394,7 @@ public final class OrderEncoder
         return "";
     }
 
-    public OrderEncoder side(final Side value)
+    public OrderEncoder side(final OrderSide value)
     {
         buffer.putByte(offset + 28, (byte)value.value());
         return this;

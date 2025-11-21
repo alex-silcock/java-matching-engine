@@ -2,7 +2,7 @@
 package baseline;
 
 @SuppressWarnings("all")
-public enum Side
+public enum OrderSide
 {
     BUY((short)0),
 
@@ -15,7 +15,7 @@ public enum Side
 
     private final short value;
 
-    Side(final short value)
+    OrderSide(final short value)
     {
         this.value = value;
     }
@@ -36,7 +36,7 @@ public enum Side
      * @param value encoded to be looked up.
      * @return the enum value representing the value.
      */
-    public static Side get(final short value)
+    public static OrderSide get(final short value)
     {
         switch (value)
         {

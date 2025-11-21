@@ -34,7 +34,7 @@ public class Main {
             for (int i=0;i<250;i++) {
                 double qty = min + ThreadLocalRandom.current().nextDouble() * (max - min);
                 double price = min + ThreadLocalRandom.current().nextDouble() * (max - min);
-                baseline.Side side = ThreadLocalRandom.current().nextDouble() < 0.5 ? baseline.Side.BUY : baseline.Side.SELL;
+                baseline.OrderSide side = ThreadLocalRandom.current().nextDouble() < 0.5 ? baseline.OrderSide.BUY : baseline.OrderSide.SELL;
 
                 qty = Math.round(qty * 100.0) / 100.0;
                 price = Math.round(price * 100.0) / 100.0;

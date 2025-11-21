@@ -14,6 +14,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         <sbe.tool.version>1.36.2</sbe.tool.version>
         <sbe.output.dir>${project.build.directory}/generated-sources/sbe</sbe.output.dir>
+        <sbe.baseline.dir>${project.basedir}</sbe.baseline.dir>
     </properties>
 
     <dependencies>
@@ -110,6 +111,29 @@
                             <sources>
                                 <source>${sbe.output.dir}</source>
                             </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-sbe-baseline</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${sbe.baseline.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${sbe.output.dir}</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>
