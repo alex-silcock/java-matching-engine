@@ -14,7 +14,10 @@ import org.agrona.concurrent.UnsafeBuffer;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
 
 import com.kx.c;
 
@@ -24,15 +27,27 @@ public class MarketListener {
     private final int port;
     public OrderBook orderBook;
     private static KDBHandler kh;
-    private static OrderDecoder decoder;
-    private static Snowflake snowflake;
+    private static Snowflake snowflake; // Snowflake ID generator
+    private final BlockingQueue<Order> orderQueue = new LinkedBlockingQueue<>();
 
     public MarketListener(int port) {
         this.port = port;
         this.orderBook = new OrderBook("AAPL");
         this.kh = new KDBHandler(KDBHandler.KDBTarget.TP);
-        this.decoder = new OrderDecoder();
         this.snowflake = new Snowflake(275);
+    }
+
+    public void readQueue() {
+        while (true) {
+            try {
+                Order order = orderQueue.take();
+                pubOrder(order);
+                ArrayList<Order> ordersTraded = orderBook.add(order);
+                pubTrade(order, ordersTraded);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void startListening() {
@@ -81,30 +96,37 @@ public class MarketListener {
     }
 
     private void handleClient(Socket socket) {
+        OrderDecoder clientDecoder = new OrderDecoder();
         try (DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
             
             while (true) {
-                // Handle receiving new order
                 int len = in.readInt();
                 byte[] bytes = new byte[len];
                 in.readFully(bytes);
                 UnsafeBuffer buffer = new UnsafeBuffer(bytes);
-                decoder.wrap(buffer, 0, this.decoder.BLOCK_LENGTH, this.decoder.SCHEMA_VERSION);
-                Order order = Order.decode(decoder);
+                clientDecoder.wrap(buffer, 0, clientDecoder.BLOCK_LENGTH, clientDecoder.SCHEMA_VERSION);
+                Order order = Order.decode(clientDecoder);
                 order.setOrderReceivedTime();
+                LocalDateTime receivedTime = order.getOrderReceivedTime();
                 long orderId = snowflake.nextId();
-                order.setOrderId(snowflake.nextId());
+                order.setOrderId(orderId);
 
                 System.out.println("[MarketListener] Received: " + order);
-                    order.setOrderReceivedTime();
-                    pubOrder(order);
-                    ArrayList<Order> ordersTraded = orderBook.add(order);
-                    pubTrade(order, ordersTraded);
-
-                    out.writeUTF("ACK: " + orderId); // orderId sent back as an ACK
-                    out.flush();
+                boolean enqueued = orderQueue.offer(order);
+                /* 
+                * This could become something else SBE encoded for sending ACKS
+                * For example, an enum
+                * 0 (OrderID, Received Time) Success
+                * 1 (-1.    , -1 )           Fail
+                */ 
+                if (enqueued) {
+                    out.writeUTF("ACK: " + orderId + " " + receivedTime);
+                } else {
+                    out.writeUTF("Order bounced");
+                }
+                out.flush();
             }
 
         } catch (EOFException e) {
@@ -121,6 +143,7 @@ public class MarketListener {
     public static void main(String[] args) {
         int port = 1234;
         MarketListener listener = new MarketListener(port);
-        listener.startListening();
+        new Thread(listener::startListeneing, "MarketListener").start();
+        new Thread(listener::readQueue, "QueueReader").start();
     }
 }

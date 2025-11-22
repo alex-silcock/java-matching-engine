@@ -6,7 +6,11 @@ import baseline.OrderSide;
 import org.agrona.concurrent.UnsafeBuffer;
 
 import java.util.*;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import lombok.Getter;
+import lombok.Setter;
+
 
 public class Order implements Comparable<Order>{
     public final String ticker;
@@ -14,7 +18,7 @@ public class Order implements Comparable<Order>{
     private long orderId;
     private final OrderSide side;
     private final double price;
-    private Timestamp orderReceivedTime;
+    private LocalDateTime orderReceivedTime;
 
 
     public Order(String ticker, double size, OrderSide side, double price) {
@@ -46,7 +50,7 @@ public class Order implements Comparable<Order>{
     public void setOrderId(long id) {
         this.orderId = id;
     }
-    
+
     public long getOrderId() {
         return this.orderId;
     }
@@ -76,10 +80,10 @@ public class Order implements Comparable<Order>{
     }
 
     public void setOrderReceivedTime() {
-        this.orderReceivedTime = new Timestamp(System.currentTimeMillis());
+        this.orderReceivedTime = LocalDateTime.now();
     }
 
-    public Timestamp getOrderReceivedTime() {
+    public LocalDateTime getOrderReceivedTime() {
         return this.orderReceivedTime;
     }
 
@@ -95,9 +99,7 @@ public class Order implements Comparable<Order>{
         }
 
         int timestampComparison = this.getOrderReceivedTime().compareTo(o.getOrderReceivedTime());
-        if (timestampComparison != 0) {
-            return timestampComparison;
-        }
+        if (timestampComparison != 0) return timestampComparison;
         // default to return on Snowflake ID
         return Long.compare(this.getOrderId(), o.getOrderId());
     }

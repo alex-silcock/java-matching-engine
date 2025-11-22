@@ -3,6 +3,7 @@ import matchingengine.utils.OrderBook;
 import matchingengine.utils.Order;
 import matchingengine.utils.MarketListener;
 import baseline.OrderEncoder;
+import baseline.OrderSide;
 
 import java.io.*;
 import java.net.*;
@@ -26,15 +27,14 @@ public class Main {
             out.flush();
             DataInputStream in = new DataInputStream(socket.getInputStream());
 
-            int max = 20;
             int min = 1;
-            List<Order> orders = new ArrayList<>();
-            int sentCount = 0;
+            int max = 20;
+            int totalOrders = 250;
 
-            for (int i=0;i<250;i++) {
+            for (int i = 0; i <= totalOrders; i++) {
                 double qty = min + ThreadLocalRandom.current().nextDouble() * (max - min);
                 double price = min + ThreadLocalRandom.current().nextDouble() * (max - min);
-                baseline.OrderSide side = ThreadLocalRandom.current().nextDouble() < 0.5 ? baseline.OrderSide.BUY : baseline.OrderSide.SELL;
+                OrderSide side = ThreadLocalRandom.current().nextDouble() < 0.5 ? OrderSide.BUY : OrderSide.SELL;
 
                 qty = Math.round(qty * 100.0) / 100.0;
                 price = Math.round(price * 100.0) / 100.0;
@@ -48,15 +48,15 @@ public class Main {
                 int len = encoder.encodedLength();
                 byte[] bytes = new byte[len];
                 buffer.getBytes(0, bytes);
+
                 out.writeInt(len);
                 out.write(bytes);
+                String ack = in.readUTF();
                 
                 out.flush();
-                Thread.sleep(1);
 
                 if (i % 100 == 0) {
-                    sentCount += 100;
-                    System.out.println(String.format("Sent %d orders", sentCount));
+                    System.out.println("Sent " + i + " orders");
                 }
             }
         } catch (Exception e){
