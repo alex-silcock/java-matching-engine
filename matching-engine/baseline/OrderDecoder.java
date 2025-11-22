@@ -6,7 +6,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public final class OrderDecoder
 {
-    public static final int BLOCK_LENGTH = 45;
+    public static final int BLOCK_LENGTH = 21;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
@@ -297,98 +297,9 @@ public final class OrderDecoder
     }
 
 
-    public static int orderTimeId()
-    {
-        return 3;
-    }
-
-    public static int orderTimeSinceVersion()
-    {
-        return 0;
-    }
-
-    public static int orderTimeEncodingOffset()
-    {
-        return 12;
-    }
-
-    public static int orderTimeEncodingLength()
-    {
-        return 8;
-    }
-
-    public static String orderTimeMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        if (MetaAttribute.PRESENCE == metaAttribute)
-        {
-            return "required";
-        }
-
-        return "";
-    }
-
-    public static long orderTimeNullValue()
-    {
-        return 0xffffffffffffffffL;
-    }
-
-    public static long orderTimeMinValue()
-    {
-        return 0x0L;
-    }
-
-    public static long orderTimeMaxValue()
-    {
-        return 0xfffffffffffffffeL;
-    }
-
-    public long orderTime()
-    {
-        return buffer.getLong(offset + 12, BYTE_ORDER);
-    }
-
-
-    public static int tradeIdId()
-    {
-        return 4;
-    }
-
-    public static int tradeIdSinceVersion()
-    {
-        return 0;
-    }
-
-    public static int tradeIdEncodingOffset()
-    {
-        return 20;
-    }
-
-    public static int tradeIdEncodingLength()
-    {
-        return 8;
-    }
-
-    public static String tradeIdMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        if (MetaAttribute.PRESENCE == metaAttribute)
-        {
-            return "required";
-        }
-
-        return "";
-    }
-
-    private final TradeIdDecoder tradeId = new TradeIdDecoder();
-
-    public TradeIdDecoder tradeId()
-    {
-        tradeId.wrap(buffer, offset + 20);
-        return tradeId;
-    }
-
     public static int sideId()
     {
-        return 5;
+        return 3;
     }
 
     public static int sideSinceVersion()
@@ -398,7 +309,7 @@ public final class OrderDecoder
 
     public static int sideEncodingOffset()
     {
-        return 28;
+        return 12;
     }
 
     public static int sideEncodingLength()
@@ -418,18 +329,18 @@ public final class OrderDecoder
 
     public short sideRaw()
     {
-        return ((short)(buffer.getByte(offset + 28) & 0xFF));
+        return ((short)(buffer.getByte(offset + 12) & 0xFF));
     }
 
     public OrderSide side()
     {
-        return OrderSide.get(((short)(buffer.getByte(offset + 28) & 0xFF)));
+        return OrderSide.get(((short)(buffer.getByte(offset + 12) & 0xFF)));
     }
 
 
     public static int priceId()
     {
-        return 6;
+        return 4;
     }
 
     public static int priceSinceVersion()
@@ -439,7 +350,7 @@ public final class OrderDecoder
 
     public static int priceEncodingOffset()
     {
-        return 29;
+        return 13;
     }
 
     public static int priceEncodingLength()
@@ -474,58 +385,7 @@ public final class OrderDecoder
 
     public double price()
     {
-        return buffer.getDouble(offset + 29, BYTE_ORDER);
-    }
-
-
-    public static int orderReceivedTimeId()
-    {
-        return 7;
-    }
-
-    public static int orderReceivedTimeSinceVersion()
-    {
-        return 0;
-    }
-
-    public static int orderReceivedTimeEncodingOffset()
-    {
-        return 37;
-    }
-
-    public static int orderReceivedTimeEncodingLength()
-    {
-        return 8;
-    }
-
-    public static String orderReceivedTimeMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        if (MetaAttribute.PRESENCE == metaAttribute)
-        {
-            return "required";
-        }
-
-        return "";
-    }
-
-    public static long orderReceivedTimeNullValue()
-    {
-        return 0xffffffffffffffffL;
-    }
-
-    public static long orderReceivedTimeMinValue()
-    {
-        return 0x0L;
-    }
-
-    public static long orderReceivedTimeMaxValue()
-    {
-        return 0xfffffffffffffffeL;
-    }
-
-    public long orderReceivedTime()
-    {
-        return buffer.getLong(offset + 37, BYTE_ORDER);
+        return buffer.getDouble(offset + 13, BYTE_ORDER);
     }
 
 
@@ -579,28 +439,11 @@ public final class OrderDecoder
         builder.append("size=");
         builder.append(this.size());
         builder.append('|');
-        builder.append("orderTime=");
-        builder.append(this.orderTime());
-        builder.append('|');
-        builder.append("tradeId=");
-        final TradeIdDecoder tradeId = this.tradeId();
-        if (null != tradeId)
-        {
-            tradeId.appendTo(builder);
-        }
-        else
-        {
-            builder.append("null");
-        }
-        builder.append('|');
         builder.append("side=");
         builder.append(this.side());
         builder.append('|');
         builder.append("price=");
         builder.append(this.price());
-        builder.append('|');
-        builder.append("orderReceivedTime=");
-        builder.append(this.orderReceivedTime());
 
         limit(originalLimit);
 

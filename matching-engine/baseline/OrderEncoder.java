@@ -6,7 +6,7 @@ import org.agrona.MutableDirectBuffer;
 @SuppressWarnings("all")
 public final class OrderEncoder
 {
-    public static final int BLOCK_LENGTH = 45;
+    public static final int BLOCK_LENGTH = 21;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
@@ -274,99 +274,9 @@ public final class OrderEncoder
     }
 
 
-    public static int orderTimeId()
-    {
-        return 3;
-    }
-
-    public static int orderTimeSinceVersion()
-    {
-        return 0;
-    }
-
-    public static int orderTimeEncodingOffset()
-    {
-        return 12;
-    }
-
-    public static int orderTimeEncodingLength()
-    {
-        return 8;
-    }
-
-    public static String orderTimeMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        if (MetaAttribute.PRESENCE == metaAttribute)
-        {
-            return "required";
-        }
-
-        return "";
-    }
-
-    public static long orderTimeNullValue()
-    {
-        return 0xffffffffffffffffL;
-    }
-
-    public static long orderTimeMinValue()
-    {
-        return 0x0L;
-    }
-
-    public static long orderTimeMaxValue()
-    {
-        return 0xfffffffffffffffeL;
-    }
-
-    public OrderEncoder orderTime(final long value)
-    {
-        buffer.putLong(offset + 12, value, BYTE_ORDER);
-        return this;
-    }
-
-
-    public static int tradeIdId()
-    {
-        return 4;
-    }
-
-    public static int tradeIdSinceVersion()
-    {
-        return 0;
-    }
-
-    public static int tradeIdEncodingOffset()
-    {
-        return 20;
-    }
-
-    public static int tradeIdEncodingLength()
-    {
-        return 8;
-    }
-
-    public static String tradeIdMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        if (MetaAttribute.PRESENCE == metaAttribute)
-        {
-            return "required";
-        }
-
-        return "";
-    }
-
-    private final TradeIdEncoder tradeId = new TradeIdEncoder();
-
-    public TradeIdEncoder tradeId()
-    {
-        tradeId.wrap(buffer, offset + 20);
-        return tradeId;
-    }
-
     public static int sideId()
     {
-        return 5;
+        return 3;
     }
 
     public static int sideSinceVersion()
@@ -376,7 +286,7 @@ public final class OrderEncoder
 
     public static int sideEncodingOffset()
     {
-        return 28;
+        return 12;
     }
 
     public static int sideEncodingLength()
@@ -396,13 +306,13 @@ public final class OrderEncoder
 
     public OrderEncoder side(final OrderSide value)
     {
-        buffer.putByte(offset + 28, (byte)value.value());
+        buffer.putByte(offset + 12, (byte)value.value());
         return this;
     }
 
     public static int priceId()
     {
-        return 6;
+        return 4;
     }
 
     public static int priceSinceVersion()
@@ -412,7 +322,7 @@ public final class OrderEncoder
 
     public static int priceEncodingOffset()
     {
-        return 29;
+        return 13;
     }
 
     public static int priceEncodingLength()
@@ -447,59 +357,7 @@ public final class OrderEncoder
 
     public OrderEncoder price(final double value)
     {
-        buffer.putDouble(offset + 29, value, BYTE_ORDER);
-        return this;
-    }
-
-
-    public static int orderReceivedTimeId()
-    {
-        return 7;
-    }
-
-    public static int orderReceivedTimeSinceVersion()
-    {
-        return 0;
-    }
-
-    public static int orderReceivedTimeEncodingOffset()
-    {
-        return 37;
-    }
-
-    public static int orderReceivedTimeEncodingLength()
-    {
-        return 8;
-    }
-
-    public static String orderReceivedTimeMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        if (MetaAttribute.PRESENCE == metaAttribute)
-        {
-            return "required";
-        }
-
-        return "";
-    }
-
-    public static long orderReceivedTimeNullValue()
-    {
-        return 0xffffffffffffffffL;
-    }
-
-    public static long orderReceivedTimeMinValue()
-    {
-        return 0x0L;
-    }
-
-    public static long orderReceivedTimeMaxValue()
-    {
-        return 0xfffffffffffffffeL;
-    }
-
-    public OrderEncoder orderReceivedTime(final long value)
-    {
-        buffer.putLong(offset + 37, value, BYTE_ORDER);
+        buffer.putDouble(offset + 13, value, BYTE_ORDER);
         return this;
     }
 

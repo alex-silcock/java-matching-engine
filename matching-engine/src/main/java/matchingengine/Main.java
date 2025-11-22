@@ -41,7 +41,6 @@ public class Main {
                 
                 encoder.wrap(buffer, 0)
                     .ticker("AAPL")
-                    .orderTime(System.currentTimeMillis())
                     .size(qty)
                     .side(side)
                     .price(price);

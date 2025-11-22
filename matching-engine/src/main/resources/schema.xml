@@ -15,25 +15,17 @@
 
         <type name="ticker" primitiveType="char" length="4"/>
         <type name="size" primitiveType="double"/>
-        <type name="orderTime" primitiveType="uint64"/>
-        <composite name="tradeId">
-            <type name="id" primitiveType="uint64"/>
-        </composite>
         <enum name="OrderSide" encodingType="uint8">
             <validValue name="BUY">0</validValue>
             <validValue name="SELL">1</validValue>
         </enum>
         <type name="price" primitiveType="double"/>
-        <type name="orderReceivedTime" primitiveType="uint64"/>
     </sbe:types>
 
     <sbe:message name="Order" id="1">
         <field name="ticker" id="1" type="ticker"/>
         <field name="size" id="2" type="size"/>
-        <field name="orderTime" id="3" type="orderTime"/>
-        <field name="tradeId" id="4" type="tradeId"/>
-        <field name="side" id="5" type="OrderSide"/>
-        <field name="price" id="6" type="price"/>
-        <field name="orderReceivedTime" id="7" type="orderReceivedTime"/>
+        <field name="side" id="3" type="OrderSide"/>
+        <field name="price" id="4" type="price"/>
     </sbe:message>
 </sbe:messageSchema>

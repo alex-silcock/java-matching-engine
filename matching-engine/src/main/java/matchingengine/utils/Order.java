@@ -1,4 +1,5 @@
 package matchingengine.utils;
+
 import baseline.OrderDecoder;
 import baseline.OrderEncoder;
 import baseline.OrderSide;
@@ -6,14 +7,11 @@ import org.agrona.concurrent.UnsafeBuffer;
 
 import java.util.*;
 import java.sql.Timestamp;
-import java.io.Serializable;
 
-public class Order implements Comparable<Order>, Serializable {
-    private static final long serialVersionUID = 1L;
+public class Order implements Comparable<Order>{
     public final String ticker;
     private double size;
-    private final Timestamp orderTime;
-    private final UUID tradeId; // TODO - update this to snowflake ID 
+    private long orderId;
     private final OrderSide side;
     private final double price;
     private Timestamp orderReceivedTime;
@@ -21,8 +19,6 @@ public class Order implements Comparable<Order>, Serializable {
 
     public Order(String ticker, double size, OrderSide side, double price) {
         this.ticker = ticker;
-        this.tradeId = UUID.randomUUID();
-        this.orderTime = new Timestamp(System.currentTimeMillis());
         this.size = size;
         this.side = side;
         this.price = price;
@@ -33,24 +29,26 @@ public class Order implements Comparable<Order>, Serializable {
         encoder.wrap(buffer, offset);
         encoder.ticker(ticker);
         encoder.size(size);
-        encoder.orderTime(orderTime.getTime());
-        encoder.tradeId().id(tradeId.getLeastSignificantBits());
         encoder.side(side);
         encoder.price(price);
-        encoder.orderReceivedTime(-1);
         return encoder.encodedLength();
     }
 
     public static Order decode(OrderDecoder decoder) {
         String ticker = decoder.ticker();
         double size = decoder.size();
-        long orderTime = decoder.orderTime();
-        UUID tradeId = new UUID(0, decoder.tradeId().id());
         OrderSide side = decoder.side();
         double price = decoder.price();
-        Timestamp orderReceivedTime = new Timestamp(decoder.orderReceivedTime()); // may be some issue here
         Order order = new Order(ticker, size, side, price);
         return order;
+    }
+
+    public void setOrderId(long id) {
+        this.orderId = id;
+    }
+    
+    public long getOrderId() {
+        return this.orderId;
     }
 
     public String getTicker() {
@@ -61,16 +59,8 @@ public class Order implements Comparable<Order>, Serializable {
         return this.size;
     }
 
-    public UUID getTradeId() {
-        return this.tradeId;
-    }
-
     public String getSide() {
         return this.side.toString();
-    }
-
-    public Timestamp getOrderTime() {
-        return this.orderTime;
     }
 
     public double getOrderPrice() {
@@ -104,12 +94,12 @@ public class Order implements Comparable<Order>, Serializable {
             }
         }
 
-        int timestampComparison = this.getOrderTime().compareTo(o.getOrderTime());
+        int timestampComparison = this.getOrderReceivedTime().compareTo(o.getOrderReceivedTime());
         if (timestampComparison != 0) {
             return timestampComparison;
         }
-        // default to return on UUID
-        return this.getTradeId().compareTo(o.getTradeId());
+        // default to return on Snowflake ID
+        return Long.compare(this.getOrderId(), o.getOrderId());
     }
 
     @Override

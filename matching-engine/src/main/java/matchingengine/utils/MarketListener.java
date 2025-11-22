@@ -1,15 +1,21 @@
 package matchingengine.utils;
+
+import baseline.OrderEncoder;
+import baseline.OrderDecoder;
+import baseline.MessageHeaderDecoder;
+
 import matchingengine.utils.Order;
 import matchingengine.utils.OrderBook;
 import matchingengine.utils.KDBHandler;
-import baseline.OrderEncoder;
-import baseline.OrderDecoder;
-import java.nio.ByteBuffer;
+import matchingengine.utils.Snowflake;
+
 import org.agrona.concurrent.UnsafeBuffer;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.nio.ByteBuffer;
+
 import com.kx.c;
 
 public class MarketListener {
@@ -19,11 +25,14 @@ public class MarketListener {
     public OrderBook orderBook;
     private static KDBHandler kh;
     private static OrderDecoder decoder;
+    private static Snowflake snowflake;
 
     public MarketListener(int port) {
         this.port = port;
         this.orderBook = new OrderBook("AAPL");
         this.kh = new KDBHandler(KDBHandler.KDBTarget.TP);
+        this.decoder = new OrderDecoder();
+        this.snowflake = new Snowflake(275);
     }
 
     public void startListening() {
@@ -44,49 +53,57 @@ public class MarketListener {
         }
     }
 
+    private void pubOrder(Order order) {
+        Object[] tpObjOrder = new Object[] {
+            new c.Timespan(),
+            order.getTicker(),
+            order.getSide(),
+            order.getOrderPrice(),
+            order.getRemainingQuantity(),
+            order.getOrderId()
+        };
+        kh.publishToTp("orders", tpObjOrder);
+    }
+
+    private void pubTrade(Order order, ArrayList<Order> ordersTraded) {
+        for (Order trade : ordersTraded) {
+            long[] tradeIds = new long[] {trade.getOrderId(), order.getOrderId()};
+
+            Object[] tpObjTrade = new Object[] {
+                new c.Timespan(),
+                trade.getTicker(),
+                trade.getOrderPrice(),
+                trade.getRemainingQuantity(),
+                tradeIds
+            };
+            kh.publishToTp("trades", tpObjTrade);
+        }
+    }
+
     private void handleClient(Socket socket) {
         try (DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
+            MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
             
             while (true) {
+                // Handle receiving new order
                 int len = in.readInt();
                 byte[] bytes = new byte[len];
                 in.readFully(bytes);
-
                 UnsafeBuffer buffer = new UnsafeBuffer(bytes);
-                OrderDecoder decoder = new OrderDecoder();
-                decoder.wrap(buffer, 0, OrderDecoder.BLOCK_LENGTH, OrderDecoder.SCHEMA_VERSION);
-
+                decoder.wrap(buffer, 0, this.decoder.BLOCK_LENGTH, this.decoder.SCHEMA_VERSION);
                 Order order = Order.decode(decoder);
                 order.setOrderReceivedTime();
+                long orderId = snowflake.nextId();
+                order.setOrderId(snowflake.nextId());
+
                 System.out.println("[MarketListener] Received: " + order);
                     order.setOrderReceivedTime();
+                    pubOrder(order);
                     ArrayList<Order> ordersTraded = orderBook.add(order);
-                    
-                    Object[] tpObjOrder = new Object[] {
-                        new c.Timespan(),
-                        order.getTicker(),
-                        order.getSide(),
-                        order.getOrderPrice(),
-                        order.getRemainingQuantity(),
-                        order.getTradeId().toString()
-                    };
-                    kh.publishToTp("orders", tpObjOrder);
+                    pubTrade(order, ordersTraded);
 
-                    for (Order trade : ordersTraded) {
-                        String[] tradeIds = new String[] {trade.getTradeId().toString(), order.getTradeId().toString()};
-
-                        Object[] tpObjTrade = new Object[] {
-                            new c.Timespan(),
-                            trade.getTicker(),
-                            trade.getOrderPrice(),
-                            trade.getRemainingQuantity(),
-                            tradeIds
-                        };
-                        kh.publishToTp("trades", tpObjTrade);
-                    }
-
-                    out.writeUTF("ACK: " + order);
+                    out.writeUTF("ACK: " + orderId); // orderId sent back as an ACK
                     out.flush();
             }
 
@@ -106,5 +123,4 @@ public class MarketListener {
         MarketListener listener = new MarketListener(port);
         listener.startListening();
     }
-
 }
