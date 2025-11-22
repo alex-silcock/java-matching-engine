@@ -143,7 +143,7 @@ public class MarketListener {
     public static void main(String[] args) {
         int port = 1234;
         MarketListener listener = new MarketListener(port);
-        new Thread(listener::startListeneing, "MarketListener").start();
+        new Thread(listener::startListening, "MarketListener").start();
         new Thread(listener::readQueue, "QueueReader").start();
     }
 }
