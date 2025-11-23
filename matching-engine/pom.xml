@@ -13,6 +13,7 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <sbe.tool.version>1.36.2</sbe.tool.version>
+        <lombok.version>1.18.42</lombok.version>
         <sbe.output.dir>${project.build.directory}/generated-sources/sbe</sbe.output.dir>
         <sbe.baseline.dir>${project.basedir}</sbe.baseline.dir>
     </properties>
@@ -40,7 +41,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.42</version>
+            <version>${lombok.version}</version>
         </dependency>
     </dependencies>
 
@@ -53,6 +54,13 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 

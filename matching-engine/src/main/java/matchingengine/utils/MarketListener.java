@@ -76,8 +76,8 @@ public class MarketListener {
             new c.Timespan(),
             order.getTicker(),
             order.getSide().toString(),
-            order.getOrderPrice(),
-            order.getRemainingQuantity(),
+            order.getPrice(),
+            order.getQty(),
             order.getOrderId()
         };
         kh.publishToTp("orders", tpObjOrder);
@@ -90,8 +90,8 @@ public class MarketListener {
             Object[] tpObjTrade = new Object[] {
                 new c.Timespan(),
                 trade.getTicker(),
-                trade.getOrderPrice(),
-                trade.getRemainingQuantity(),
+                trade.getPrice(),
+                trade.getQty(),
                 tradeIds
             };
             kh.publishToTp("trades", tpObjTrade);

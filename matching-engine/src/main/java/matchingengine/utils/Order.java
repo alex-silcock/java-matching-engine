@@ -13,19 +13,19 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
-
+@Getter @Setter
 public class Order implements Comparable<Order>, OrderMessage{
     public final String ticker;
-    private double size;
+    private double qty;
     private long orderId;
     private final OrderSide side;
     private final double price;
     private LocalDateTime orderReceivedTime;
 
 
-    public Order(String ticker, double size, OrderSide side, double price) {
+    public Order(String ticker, double qty, OrderSide side, double price) {
         this.ticker = ticker;
-        this.size = size;
+        this.qty = qty;
         this.side = side;
         this.price = price;
     }
@@ -34,7 +34,7 @@ public class Order implements Comparable<Order>, OrderMessage{
         OrderEncoder encoder = new OrderEncoder();
         encoder.wrap(buffer, offset);
         encoder.ticker(ticker);
-        encoder.size(size);
+        encoder.qty(qty);
         encoder.side(side);
         encoder.price(price);
         return encoder.encodedLength();
@@ -42,56 +42,20 @@ public class Order implements Comparable<Order>, OrderMessage{
 
     public static Order decode(OrderDecoder decoder) {
         String ticker = decoder.ticker();
-        double size = decoder.size();
+        double qty = decoder.qty();
         OrderSide side = decoder.side();
         double price = decoder.price();
-        Order order = new Order(ticker, size, side, price);
+        Order order = new Order(ticker, qty, side, price);
         return order;
-    }
-
-    public void setOrderId(long id) {
-        this.orderId = id;
-    }
-
-    public long getOrderId() {
-        return this.orderId;
-    }
-
-    public String getTicker() {
-        return this.ticker;
-    }
-
-    public double getRemainingQuantity() {
-        return this.size;
-    }
-
-    public OrderSide getSide() {
-        return this.side;
-    }
-
-    public double getOrderPrice() {
-        return this.price;
-    }
-
-    public double getOrderSize() {
-        return this.size;
-    }
-
-    public void setQuantity(double newQty) {
-        this.size = newQty;
     }
 
     public void setOrderReceivedTime() {
         this.orderReceivedTime = LocalDateTime.now();
     }
 
-    public LocalDateTime getOrderReceivedTime() {
-        return this.orderReceivedTime;
-    }
-
     @Override
     public int compareTo(Order order) {
-        int priceComparison = Double.compare(this.price, order.getOrderPrice());
+        int priceComparison = Double.compare(this.price, order.getPrice());
         if (priceComparison != 0) {
             if (Objects.equals(order.getSide(), OrderSide.BUY)) {
                 return priceComparison * -1;
@@ -108,6 +72,6 @@ public class Order implements Comparable<Order>, OrderMessage{
 
     @Override
     public String toString() {
-        return String.format("Order[%s %.2f %s %.2f]", ticker, size, side, price);
+        return String.format("Order[%s %.2f %s %.2f]", ticker, qty, side, price);
     }
 }

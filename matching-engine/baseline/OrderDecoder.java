@@ -246,27 +246,27 @@ public final class OrderDecoder
     }
 
 
-    public static int sizeId()
+    public static int qtyId()
     {
         return 2;
     }
 
-    public static int sizeSinceVersion()
+    public static int qtySinceVersion()
     {
         return 0;
     }
 
-    public static int sizeEncodingOffset()
+    public static int qtyEncodingOffset()
     {
         return 4;
     }
 
-    public static int sizeEncodingLength()
+    public static int qtyEncodingLength()
     {
         return 8;
     }
 
-    public static String sizeMetaAttribute(final MetaAttribute metaAttribute)
+    public static String qtyMetaAttribute(final MetaAttribute metaAttribute)
     {
         if (MetaAttribute.PRESENCE == metaAttribute)
         {
@@ -276,22 +276,22 @@ public final class OrderDecoder
         return "";
     }
 
-    public static double sizeNullValue()
+    public static double qtyNullValue()
     {
         return Double.NaN;
     }
 
-    public static double sizeMinValue()
+    public static double qtyMinValue()
     {
         return -1.7976931348623157E308d;
     }
 
-    public static double sizeMaxValue()
+    public static double qtyMaxValue()
     {
         return 1.7976931348623157E308d;
     }
 
-    public double size()
+    public double qty()
     {
         return buffer.getDouble(offset + 4, BYTE_ORDER);
     }
@@ -436,8 +436,8 @@ public final class OrderDecoder
             builder.append((char)this.ticker(i));
         }
         builder.append('|');
-        builder.append("size=");
-        builder.append(this.size());
+        builder.append("qty=");
+        builder.append(this.qty());
         builder.append('|');
         builder.append("side=");
         builder.append(this.side());

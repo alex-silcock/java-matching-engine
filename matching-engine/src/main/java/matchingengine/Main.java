@@ -42,7 +42,7 @@ public class Main {
                 
                 encoder.wrap(buffer, 0)
                     .ticker("AAPL")
-                    .size(qty)
+                    .qty(qty)
                     .side(side)
                     .price(price);
                     

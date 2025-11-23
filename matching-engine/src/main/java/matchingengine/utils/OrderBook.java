@@ -24,10 +24,6 @@ public class OrderBook {
         return this.asks;
     }
 
-    public String getInstrument() {
-        return this.ticker;
-    }
-
     public Order getBestBidOrder() {
         if (!this.bids.isEmpty()) {
             return this.bids.first();
@@ -44,7 +40,7 @@ public class OrderBook {
     }
     public double getBestBid() {
         try {
-            return this.bids.first().getOrderPrice();
+            return this.bids.first().getPrice();
         } catch (NoSuchElementException e) {
             return -1;
         }
@@ -52,7 +48,7 @@ public class OrderBook {
 
     public double getBestOffer() {
         try {
-            return this.asks.first().getOrderPrice();
+            return this.asks.first().getPrice();
         } catch (NoSuchElementException e) {
             return -1;
         }
@@ -81,22 +77,22 @@ public class OrderBook {
         if (incomingOrder.getSide() == OrderSide.BUY) {
             double bestOffer = this.getBestOffer();
             Order bestOfferOrder = this.getBestOfferOrder();
-            double incomingOrderPrice = incomingOrder.getOrderPrice();
+            double incomingOrderPrice = incomingOrder.getPrice();
 
             if (bestOfferOrder == null || incomingOrderPrice < bestOffer) {
                 this.bids.add(incomingOrder);
 
             } else if (incomingOrderPrice >= bestOffer) {
-                double quantityLeftToTrade = incomingOrder.getRemainingQuantity();
+                double quantityLeftToTrade = incomingOrder.getQty();
                 Order headAskOrder = this.asks.first();
 
                 while (quantityLeftToTrade > 0) {
-                    double headAskOrderQty = headAskOrder.getRemainingQuantity();
+                    double headAskOrderQty = headAskOrder.getQty();
 
                     if (quantityLeftToTrade >= headAskOrderQty) {
                         ordersTraded.add(this.asks.pollFirst());
                         quantityLeftToTrade -= headAskOrderQty;
-                        incomingOrder.setQuantity(quantityLeftToTrade);
+                        incomingOrder.setQty(quantityLeftToTrade);
 
                         bestOfferOrder = this.getBestOfferOrder();
                         if (bestOfferOrder != null) {
@@ -107,8 +103,8 @@ public class OrderBook {
                         }
                     } else {
                         ordersTraded.add(this.asks.first());
-                        double newQty = headAskOrder.getRemainingQuantity() - incomingOrder.getRemainingQuantity();
-                        headAskOrder.setQuantity(newQty);
+                        double newQty = headAskOrder.getQty() - incomingOrder.getQty();
+                        headAskOrder.setQty(newQty);
                         quantityLeftToTrade = 0;
                     }
 
@@ -118,22 +114,22 @@ public class OrderBook {
         }
         else {
             double bestBid = this.getBestBid();
-            double incomingOrderPrice = incomingOrder.getOrderPrice();
+            double incomingOrderPrice = incomingOrder.getPrice();
 
             if (bestBid == -1 || incomingOrderPrice > bestBid) {
                 this.asks.add(incomingOrder);
 
             } else if (incomingOrderPrice <= bestBid) {
-                double quantityLeftToTrade = incomingOrder.getRemainingQuantity();
+                double quantityLeftToTrade = incomingOrder.getQty();
                 Order headBidOrder = this.bids.first();
 
                 while (quantityLeftToTrade > 0) {
-                    double headBidOrderQty = headBidOrder.getRemainingQuantity();
+                    double headBidOrderQty = headBidOrder.getQty();
 
                     if (quantityLeftToTrade >= headBidOrderQty) {
                         ordersTraded.add(this.bids.pollFirst());
                         quantityLeftToTrade -= headBidOrderQty;
-                        incomingOrder.setQuantity(quantityLeftToTrade);
+                        incomingOrder.setQty(quantityLeftToTrade);
 
                         Order bestBidOrder = this.getBestBidOrder();
                         if (bestBidOrder != null) {
@@ -144,8 +140,8 @@ public class OrderBook {
                         }
                     } else {
                         ordersTraded.add(headBidOrder);
-                        double newQty = headBidOrder.getRemainingQuantity() - incomingOrder.getRemainingQuantity();
-                        headBidOrder.setQuantity(newQty);
+                        double newQty = headBidOrder.getQty() - incomingOrder.getQty();
+                        headBidOrder.setQty(newQty);
                         quantityLeftToTrade = 0;
                     }
 

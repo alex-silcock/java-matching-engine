@@ -55,7 +55,7 @@ public class OrderTest {
             order.setOrderReceivedTime();
             book.add(order);
         }
-        double bestOfferSize = book.getBestOfferOrder().getRemainingQuantity();
+        double bestOfferSize = book.getBestOfferOrder().getQty();
         assertEquals(4, bestOfferSize, 0.000001d);
     }
     @Test
@@ -70,7 +70,7 @@ public class OrderTest {
             order.setOrderReceivedTime();
             book.add(order);
         }
-        double bestOfferSize = book.getBestOfferOrder().getRemainingQuantity();
+        double bestOfferSize = book.getBestOfferOrder().getQty();
         assertEquals(3.5, bestOfferSize, 0.000001d);
     }
 
@@ -90,11 +90,11 @@ public class OrderTest {
             book.add(order);
         }
 
-        double bestOfferSize = book.getBestOfferOrder().getRemainingQuantity();
-        double bestBidSize = book.getBestBidOrder().getRemainingQuantity();
+        double bestOfferSize = book.getBestOfferOrder().getQty();
+        double bestBidSize = book.getBestBidOrder().getQty();
         assertEquals(3, bestOfferSize, 0.000001d);
-        assertEquals(2.0, book.getBestOfferOrder().getOrderPrice(), 0.000001d);
+        assertEquals(2.0, book.getBestOfferOrder().getPrice(), 0.000001d);
         assertEquals(2.5, bestBidSize, 0.000001d);
-        assertEquals(2.0, book.getBestOfferOrder().getOrderPrice(), 0.000001d);
+        assertEquals(2.0, book.getBestOfferOrder().getPrice(), 0.000001d);
     }
 }
