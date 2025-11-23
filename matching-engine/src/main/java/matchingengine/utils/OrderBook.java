@@ -2,6 +2,7 @@ package matchingengine.utils;
 import javax.sound.midi.SysexMessage;
 import java.util.*;
 import java.sql.Timestamp;
+import baseline.OrderSide;
 
 
 public class OrderBook {
@@ -77,7 +78,7 @@ public class OrderBook {
         if (incomingOrder == null) {return null ;}
         ArrayList<Order> ordersTraded = new ArrayList<>();
 
-        if (Objects.equals(incomingOrder.getSide(), "BUY")) {
+        if (incomingOrder.getSide() == OrderSide.BUY) {
             double bestOffer = this.getBestOffer();
             Order bestOfferOrder = this.getBestOfferOrder();
             double incomingOrderPrice = incomingOrder.getOrderPrice();
