@@ -19,9 +19,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -29,13 +29,6 @@
             <groupId>com.kx</groupId>
             <artifactId>javakdb</artifactId>
             <version>2.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.36</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -64,6 +57,15 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
@@ -85,7 +87,8 @@
                                 </systemProperty>
                             </systemProperties>
                             <arguments>
-                                <argument>${project.basedir}/src/main/resources/schema.xml</argument>
+                                <argument>${project.basedir}/src/main/resources/order.xml</argument>
+                                <argument>${project.basedir}/src/main/resources/order_cancel.xml</argument>
                             </arguments>
 
                             <includePluginDependencies>true</includePluginDependencies>

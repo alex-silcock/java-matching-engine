@@ -1,5 +1,7 @@
 package matchingengine.utils;
 
+import matchingengine.utils.OrderMessage;
+
 import baseline.OrderDecoder;
 import baseline.OrderEncoder;
 import baseline.OrderSide;
@@ -12,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 
-public class Order implements Comparable<Order>{
+public class Order implements Comparable<Order>, OrderMessage{
     public final String ticker;
     private double size;
     private long orderId;
@@ -63,8 +65,8 @@ public class Order implements Comparable<Order>{
         return this.size;
     }
 
-    public String getSide() {
-        return this.side.toString();
+    public OrderSide getSide() {
+        return this.side;
     }
 
     public double getOrderPrice() {
@@ -91,7 +93,7 @@ public class Order implements Comparable<Order>{
     public int compareTo(Order o) {
         int priceComparison = Double.compare(this.price, o.price);
         if (priceComparison != 0) {
-            if (Objects.equals(o.getSide(), "BUY")) {
+            if (Objects.equals(o.getSide(), OrderSide.BUY)) {
                 return priceComparison * -1;
             } else {
                 return priceComparison;

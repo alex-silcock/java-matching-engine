@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   package="baseline"
+                   id="1"
+                   version="1">
+
+    <sbe:types>
+        <composite name="messageHeader">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+
+        <type name="orderId" primitiveType="uint64"/>
+    </sbe:types>
+
+    <sbe:message name="OrderCancel" id="2" blockLength="8">
+        <field name="orderId" id="1" type="orderId"/>
+    </sbe:message>
+</sbe:messageSchema>

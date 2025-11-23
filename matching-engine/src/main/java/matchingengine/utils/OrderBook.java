@@ -155,19 +155,4 @@ public class OrderBook {
         }
         return ordersTraded;
     }
-
-    public void printBook() {
-
-        NavigableSet<Order> reverseAsks = this.asks.descendingSet();
-        for (Order o : reverseAsks) {
-            System.out.println("Side: SELL - Order Received At: " + o.getOrderReceivedTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
-        }
-//        NavigableSet<Order> reverseBids = this.bids.descendingSet();
-        for (Order o : this.bids) {
-            System.out.println("Side: BUY  - Order Received At: "  + o.getOrderReceivedTime().toString() + " - Order Size " + o.getOrderSize() + " - Order Price: " + o.getOrderPrice());
-        }
-        System.out.println();
-        System.out.println("Mid Price: " + this.getMidPrice());
-        System.out.println();
-    }
 }

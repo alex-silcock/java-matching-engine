@@ -25,7 +25,6 @@ public class KDBHandler {
         try {
             this.kdbConn = new c("localhost", target.getPort());
             System.out.println(String.format("Connected to KDB on port %d", target.getPort()));
-            
         } catch (Exception e) {
             e.printStackTrace();
         }

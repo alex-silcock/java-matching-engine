@@ -8,6 +8,7 @@ import matchingengine.utils.Order;
 import matchingengine.utils.OrderBook;
 import matchingengine.utils.KDBHandler;
 import matchingengine.utils.Snowflake;
+import matchingengine.utils.OrderMessage;
 
 import org.agrona.concurrent.UnsafeBuffer;
 
@@ -28,7 +29,7 @@ public class MarketListener {
     public OrderBook orderBook;
     private static KDBHandler kh;
     private static Snowflake snowflake; // Snowflake ID generator
-    private final BlockingQueue<Order> orderQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<OrderMessage> orderQueue = new LinkedBlockingQueue<>();
 
     public MarketListener(int port) {
         this.port = port;
@@ -40,10 +41,12 @@ public class MarketListener {
     public void readQueue() {
         while (true) {
             try {
-                Order order = orderQueue.take();
-                pubOrder(order);
-                ArrayList<Order> ordersTraded = orderBook.add(order);
-                pubTrade(order, ordersTraded);
+                OrderMessage message = orderQueue.take();
+                if (message instanceof Order order) {
+                    pubOrder(order);
+                    ArrayList<Order> ordersTraded = orderBook.add(order);
+                    pubTrade(order, ordersTraded);
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -72,7 +75,7 @@ public class MarketListener {
         Object[] tpObjOrder = new Object[] {
             new c.Timespan(),
             order.getTicker(),
-            order.getSide(),
+            order.getSide().toString(),
             order.getOrderPrice(),
             order.getRemainingQuantity(),
             order.getOrderId()
@@ -107,6 +110,7 @@ public class MarketListener {
                 in.readFully(bytes);
                 UnsafeBuffer buffer = new UnsafeBuffer(bytes);
                 clientDecoder.wrap(buffer, 0, clientDecoder.BLOCK_LENGTH, clientDecoder.SCHEMA_VERSION);
+
                 Order order = Order.decode(clientDecoder);
                 order.setOrderReceivedTime();
                 LocalDateTime receivedTime = order.getOrderReceivedTime();
@@ -115,12 +119,13 @@ public class MarketListener {
 
                 System.out.println("[MarketListener] Received: " + order);
                 boolean enqueued = orderQueue.offer(order);
+
                 /* 
                 * This could become something else SBE encoded for sending ACKS
                 * For example, an enum
                 * 0 (OrderID, Received Time) Success
                 * 1 (-1.    , -1 )           Fail
-                */ 
+                */
                 if (enqueued) {
                     out.writeUTF("ACK: " + orderId + " " + receivedTime);
                 } else {
