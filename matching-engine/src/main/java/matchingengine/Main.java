@@ -1,6 +1,7 @@
 package matchingengine;
 
 import baseline.OrderEncoder;
+import baseline.OrderCancelEncoder;
 import baseline.OrderSide;
 
 import matchingengine.utils.OrderBook;
@@ -20,7 +21,9 @@ public class Main {
     public void sendOrders() {
         int port = 1234;
         OrderEncoder encoder = new OrderEncoder();
+        OrderCancelEncoder cancelEncoder = new OrderCancelEncoder();
         UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(1024));
+        UnsafeBuffer bufferCancel = new UnsafeBuffer(ByteBuffer.allocateDirect(8));
 
         try (Socket socket = new Socket("localhost", port)) {
             System.out.println("[Main] Connected to server");
@@ -52,7 +55,16 @@ public class Main {
 
                 out.writeInt(len);
                 out.write(bytes);
-                String ack = in.readUTF();
+                Long ack = in.readLong();
+                System.out.println(ack);
+
+                // cancelEncoder.wrap(bufferCancel, 0).orderId(ack);
+                // int lenC = cancelEncoder.encodedLength();
+                // byte[] bytesC = new byte[lenC];
+                // bufferCancel.getBytes(0, bytesC);
+
+                // out.writeInt(lenC);
+                // out.write(bytesC);
                 
                 out.flush();
 

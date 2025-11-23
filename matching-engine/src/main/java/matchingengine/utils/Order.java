@@ -8,20 +8,17 @@ import baseline.OrderSide;
 import org.agrona.concurrent.UnsafeBuffer;
 
 import java.util.*;
-import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class Order implements Comparable<Order>, OrderMessage{
+public class Order extends OrderMessage implements Comparable<Order>{
     public final String ticker;
     private double qty;
     private long orderId;
     private final OrderSide side;
     private final double price;
-    private LocalDateTime orderReceivedTime;
-
 
     public Order(String ticker, double qty, OrderSide side, double price) {
         this.ticker = ticker;
@@ -49,9 +46,6 @@ public class Order implements Comparable<Order>, OrderMessage{
         return order;
     }
 
-    public void setOrderReceivedTime() {
-        this.orderReceivedTime = LocalDateTime.now();
-    }
 
     @Override
     public int compareTo(Order order) {

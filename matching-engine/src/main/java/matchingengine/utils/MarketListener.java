@@ -1,8 +1,8 @@
 package matchingengine.utils;
 
-import baseline.OrderEncoder;
 import baseline.OrderDecoder;
 import baseline.MessageHeaderDecoder;
+import baseline.OrderCancelDecoder;
 
 import matchingengine.utils.Order;
 import matchingengine.utils.OrderBook;
@@ -19,6 +19,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
+import java.lang.IllegalArgumentException;
 
 import com.kx.c;
 
@@ -99,39 +100,54 @@ public class MarketListener {
     }
 
     private void handleClient(Socket socket) {
+        MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
         OrderDecoder clientDecoder = new OrderDecoder();
+        OrderCancelDecoder clientDecoderCancel = new OrderCancelDecoder();
+
         try (DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
-            MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
             
             while (true) {
                 int len = in.readInt();
                 byte[] bytes = new byte[len];
                 in.readFully(bytes);
                 UnsafeBuffer buffer = new UnsafeBuffer(bytes);
-                clientDecoder.wrap(buffer, 0, clientDecoder.BLOCK_LENGTH, clientDecoder.SCHEMA_VERSION);
 
-                Order order = Order.decode(clientDecoder);
-                order.setOrderReceivedTime();
-                LocalDateTime receivedTime = order.getOrderReceivedTime();
-                long orderId = snowflake.nextId();
-                order.setOrderId(orderId);
+                headerDecoder.wrap(buffer, 0);
+                int templateId = headerDecoder.templateId();
+                System.out.println(templateId);
 
-                System.out.println("[MarketListener] Received: " + order);
-                boolean enqueued = orderQueue.offer(order);
+                switch (templateId) {
+                    case 19536: // Normal Order
+                        clientDecoder.wrap(buffer, 0, clientDecoder.BLOCK_LENGTH, clientDecoder.SCHEMA_VERSION);
+                        Order order = Order.decode(clientDecoder);
+                        long orderId = snowflake.nextId();
+                        order.setOrderId(orderId);
+                        order.setOrderReceivedTime();
+                        LocalDateTime receivedTime = order.getOrderReceivedTime();
+                        System.out.println("[MarketListener] Received: " + order);
+                        boolean enqueued = orderQueue.offer(order);
+                        /* 
+                        * This could become something else SBE encoded for sending ACKS
+                        * For example, an enum
+                        * 0 (OrderID, Received Time) Success
+                        * 1 (-1.    , -1 )           Fail
+                        */
+                        if (enqueued) {
+                            out.writeLong(orderId);
+                        } else {
+                            out.writeLong((long)-1);
+                        }
+                        out.flush();
+                        break;
 
-                /* 
-                * This could become something else SBE encoded for sending ACKS
-                * For example, an enum
-                * 0 (OrderID, Received Time) Success
-                * 1 (-1.    , -1 )           Fail
-                */
-                if (enqueued) {
-                    out.writeUTF("ACK: " + orderId + " " + receivedTime);
-                } else {
-                    out.writeUTF("Order bounced");
+                    case 2: // Cancel Order
+                        clientDecoderCancel.wrap(buffer, 0, clientDecoderCancel.BLOCK_LENGTH, clientDecoderCancel.SCHEMA_VERSION);
+                        OrderCancel orderCancel = OrderCancel.decode(clientDecoderCancel);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Template not found");
                 }
-                out.flush();
             }
 
         } catch (EOFException e) {
