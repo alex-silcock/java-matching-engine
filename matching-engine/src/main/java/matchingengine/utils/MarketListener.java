@@ -46,7 +46,7 @@ public class MarketListener {
                 if (message instanceof Order order) {
                     ArrayList<Order> ordersTraded = orderBook.add(order);
                     pubOrder(order);
-                    pubTrade(order, ordersTraded);
+                    if (ordersTraded != null) {pubTrade(order, ordersTraded);}
                 } else if (message instanceof OrderCancel orderCancel) {
                     // pubCancel(orderCancel);
                     orderBook.cancel(orderCancel); // should return true if able to cancel - if order has not been touched
@@ -77,7 +77,7 @@ public class MarketListener {
     }
 
     private void pubOrder(OrderMessage orderMessage) {
-        Object[] tpObjOrder = new Object[6];
+        Object[] tpObjOrder = new Object[8];
         if (orderMessage instanceof Order order) {
             tpObjOrder = new Object[] {
                 new c.Timespan(),
@@ -85,16 +85,21 @@ public class MarketListener {
                 order.getSide().toString(),
                 order.getPrice(),
                 order.getQty(),
-                order.getOrderId()
+                order.getOrderId(),
+                order.getStpfId(),
+                order.getStpfInstruction().toString()
             };
+
         } else if (orderMessage instanceof OrderCancel orderCancel) {
             tpObjOrder = new Object[] {
                 new c.Timespan(),
-                " ",
+                null,
                 "CANCEL",
-                (double)-1,
-                (double)-1,
-                orderCancel.getOrderId()
+                null,
+                null,
+                orderCancel.getOrderId(),
+                null,
+                null
             };
         }
         kh.publishToTp("orders", tpObjOrder);
@@ -103,13 +108,15 @@ public class MarketListener {
     private void pubTrade(Order order, ArrayList<Order> ordersTraded) {
         for (Order trade : ordersTraded) {
             long[] tradeIds = new long[] {trade.getOrderId(), order.getOrderId()};
+            String[] stpfIds = new String[] {trade.getStpfId(), order.getStpfId()};
 
             Object[] tpObjTrade = new Object[] {
                 new c.Timespan(),
                 trade.getTicker(),
                 trade.getPrice(),
                 trade.getQty(),
-                tradeIds
+                tradeIds,
+                stpfIds
             };
             kh.publishToTp("trades", tpObjTrade);
         }

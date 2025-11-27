@@ -4,6 +4,7 @@ import baseline.OrderEncoder;
 import baseline.OrderCancelEncoder;
 import baseline.OrderSide;
 import baseline.MessageHeaderEncoder;
+import baseline.STPFInstruction;
 
 import matchingengine.utils.OrderBook;
 import matchingengine.utils.Order;
@@ -23,7 +24,7 @@ public class Main {
         int port = 1234;
         OrderEncoder encoder = new OrderEncoder();
         OrderCancelEncoder cancelEncoder = new OrderCancelEncoder();
-        UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(29));
+        UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(64));
         UnsafeBuffer bufferCancel = new UnsafeBuffer(ByteBuffer.allocateDirect(16));
 
         try (Socket socket = new Socket("localhost", port)) {
@@ -37,6 +38,8 @@ public class Main {
             int min = 1;
             int max = 20;
             int totalOrders = 250;
+            String stpf_id = "A12345";
+            STPFInstruction stpfInstruction = STPFInstruction.RRO;
 
             for (int i = 0; i < totalOrders; i++) {
                 double qty = min + ThreadLocalRandom.current().nextDouble() * (max - min);
@@ -47,12 +50,14 @@ public class Main {
                 price = Math.round(price * 100.0) / 100.0;
                 
                 encoder.wrapAndApplyHeader(buffer, 0, header)
-                    .ticker("AAPL")
-                    .qty(qty)
-                    .side(side)
-                    .price(price);
+                    .ticker("AAPL") // 4 bytes
+                    .qty(qty) // 8 bytes
+                    .side(side) // 1 byte
+                    .price(price) // 8 bytes
+                    .stpfId(stpf_id) // 6 bytes
+                    .stpfInstruction(stpfInstruction); // 1 byte
                     
-                int len = header.ENCODED_LENGTH + encoder.encodedLength(); // 8 bytes header + 21 bytes message
+                int len = header.ENCODED_LENGTH + encoder.encodedLength(); // 8 bytes header + 27 bytes message
                 byte[] bytes = new byte[len];
                 buffer.getBytes(0, bytes);
 
@@ -63,17 +68,17 @@ public class Main {
                 Long ack = in.readLong();
                 System.out.println("[Main] ACK: " + ack);
 
-                cancelEncoder.wrapAndApplyHeader(bufferCancel, 0, header)
-                    .orderId(ack);
+                // cancelEncoder.wrapAndApplyHeader(bufferCancel, 0, header)
+                //     .orderId(ack);
                 
-                int lenC = header.ENCODED_LENGTH + cancelEncoder.encodedLength(); // 8 bytes header + 8 bytes message
-                byte[] bytesC = new byte[lenC];
-                bufferCancel.getBytes(0, bytesC);                
+                // int lenC = header.ENCODED_LENGTH + cancelEncoder.encodedLength(); // 8 bytes header + 8 bytes message
+                // byte[] bytesC = new byte[lenC];
+                // bufferCancel.getBytes(0, bytesC);                
 
-                out.writeInt(lenC);
-                out.write(bytesC);
+                // out.writeInt(lenC);
+                // out.write(bytesC);
                 
-                out.flush();
+                // out.flush();
 
                 if (i % 100 == 0) {
                     System.out.println("Sent " + i + " orders");

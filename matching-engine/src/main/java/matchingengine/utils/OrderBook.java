@@ -61,7 +61,7 @@ public class OrderBook {
     public void cancel(OrderCancel orderCancel) {
         long orderId = orderCancel.getOrderId();
         Order toRemove = null;
-        boolean removed = false;
+
         for (Order order : this.bids) {
             if (order.getOrderId() == orderId) {
                 toRemove = order;
@@ -97,6 +97,12 @@ public class OrderBook {
             } else if (incomingOrderPrice >= bestOffer) {
                 double quantityLeftToTrade = incomingOrder.getQty();
                 Order headAskOrder = this.asks.first();
+
+                // if matching stpfIds then find the next order
+                while (incomingOrder.getStpfId().equals(headAskOrder.getStpfId())) {
+                    headAskOrder = this.asks.higher(headAskOrder);
+                    if (headAskOrder == null) return null;
+                }
 
                 while (quantityLeftToTrade > 0) {
                     double headAskOrderQty = headAskOrder.getQty();
@@ -134,6 +140,12 @@ public class OrderBook {
             } else if (incomingOrderPrice <= bestBid) {
                 double quantityLeftToTrade = incomingOrder.getQty();
                 Order headBidOrder = this.bids.first();
+
+                // if matching stpfIds then find the next order
+                while (incomingOrder.getStpfId().equals(headBidOrder.getStpfId())) {
+                    headBidOrder = this.bids.higher(headBidOrder);
+                    if (headBidOrder == null) return null;
+                }
 
                 while (quantityLeftToTrade > 0) {
                     double headBidOrderQty = headBidOrder.getQty();

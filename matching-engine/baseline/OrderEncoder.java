@@ -6,7 +6,7 @@ import org.agrona.MutableDirectBuffer;
 @SuppressWarnings("all")
 public final class OrderEncoder
 {
-    public static final int BLOCK_LENGTH = 21;
+    public static final int BLOCK_LENGTH = 28;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
@@ -361,6 +361,162 @@ public final class OrderEncoder
         return this;
     }
 
+
+    public static int stpfIdId()
+    {
+        return 5;
+    }
+
+    public static int stpfIdSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int stpfIdEncodingOffset()
+    {
+        return 21;
+    }
+
+    public static int stpfIdEncodingLength()
+    {
+        return 6;
+    }
+
+    public static String stpfIdMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public static byte stpfIdNullValue()
+    {
+        return (byte)0;
+    }
+
+    public static byte stpfIdMinValue()
+    {
+        return (byte)32;
+    }
+
+    public static byte stpfIdMaxValue()
+    {
+        return (byte)126;
+    }
+
+    public static int stpfIdLength()
+    {
+        return 6;
+    }
+
+
+    public OrderEncoder stpfId(final int index, final byte value)
+    {
+        if (index < 0 || index >= 6)
+        {
+            throw new IndexOutOfBoundsException("index out of range: index=" + index);
+        }
+
+        final int pos = offset + 21 + (index * 1);
+        buffer.putByte(pos, value);
+
+        return this;
+    }
+
+    public static String stpfIdCharacterEncoding()
+    {
+        return java.nio.charset.StandardCharsets.US_ASCII.name();
+    }
+
+    public OrderEncoder putStpfId(final byte[] src, final int srcOffset)
+    {
+        final int length = 6;
+        if (srcOffset < 0 || srcOffset > (src.length - length))
+        {
+            throw new IndexOutOfBoundsException("Copy will go out of range: offset=" + srcOffset);
+        }
+
+        buffer.putBytes(offset + 21, src, srcOffset, length);
+
+        return this;
+    }
+
+    public OrderEncoder stpfId(final String src)
+    {
+        final int length = 6;
+        final int srcLength = null == src ? 0 : src.length();
+        if (srcLength > length)
+        {
+            throw new IndexOutOfBoundsException("String too large for copy: byte length=" + srcLength);
+        }
+
+        buffer.putStringWithoutLengthAscii(offset + 21, src);
+
+        for (int start = srcLength; start < length; ++start)
+        {
+            buffer.putByte(offset + 21 + start, (byte)0);
+        }
+
+        return this;
+    }
+
+    public OrderEncoder stpfId(final CharSequence src)
+    {
+        final int length = 6;
+        final int srcLength = null == src ? 0 : src.length();
+        if (srcLength > length)
+        {
+            throw new IndexOutOfBoundsException("CharSequence too large for copy: byte length=" + srcLength);
+        }
+
+        buffer.putStringWithoutLengthAscii(offset + 21, src);
+
+        for (int start = srcLength; start < length; ++start)
+        {
+            buffer.putByte(offset + 21 + start, (byte)0);
+        }
+
+        return this;
+    }
+
+    public static int stpfInstructionId()
+    {
+        return 6;
+    }
+
+    public static int stpfInstructionSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int stpfInstructionEncodingOffset()
+    {
+        return 27;
+    }
+
+    public static int stpfInstructionEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String stpfInstructionMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public OrderEncoder stpfInstruction(final STPFInstruction value)
+    {
+        buffer.putByte(offset + 27, (byte)value.value());
+        return this;
+    }
 
     public String toString()
     {

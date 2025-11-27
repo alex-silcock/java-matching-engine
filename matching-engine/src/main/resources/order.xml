@@ -20,6 +20,12 @@
             <validValue name="SELL">1</validValue>
         </enum>
         <type name="price" primitiveType="double"/>
+        <type name="STPFId" primitiveType="char" length="6"/>
+        <enum name="STPFInstruction" encodingType="uint8">
+            <validValue name="RTO">0</validValue>
+            <validValue name="RRO">1</validValue>
+            <validValue name="RBO">2</validValue>
+        </enum>
     </sbe:types>
 
     <sbe:message name="Order" id="1">
@@ -27,5 +33,7 @@
         <field name="qty" id="2" type="qty"/>
         <field name="side" id="3" type="OrderSide"/>
         <field name="price" id="4" type="price"/>
+        <field name="stpfId" id="5" type="STPFId"/>
+        <field name="stpfInstruction" id="6" type="STPFInstruction"/>
     </sbe:message>
 </sbe:messageSchema>

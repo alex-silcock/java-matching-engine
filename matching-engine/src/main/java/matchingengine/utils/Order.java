@@ -5,6 +5,8 @@ import matchingengine.utils.OrderMessage;
 import baseline.OrderDecoder;
 import baseline.OrderEncoder;
 import baseline.OrderSide;
+import baseline.STPFInstruction;
+
 import org.agrona.concurrent.UnsafeBuffer;
 
 import java.util.*;
@@ -19,12 +21,24 @@ public class Order extends OrderMessage implements Comparable<Order>{
     private long orderId;
     private final OrderSide side;
     private final double price;
+    private final String STPF_ID;
+    private final STPFInstruction STPF_Instruction;
 
-    public Order(String ticker, double qty, OrderSide side, double price) {
+    public Order(String ticker, double qty, OrderSide side, double price, String stpfId, STPFInstruction stpfInstr) {
         this.ticker = ticker;
         this.qty = qty;
         this.side = side;
         this.price = price;
+        this.STPF_ID = stpfId;
+        this.STPF_Instruction = stpfInstr;
+    }
+
+    public String getStpfId() {
+        return this.STPF_ID;
+    }
+
+    public STPFInstruction getStpfInstruction() {
+        return this.STPF_Instruction;
     }
 
     public int encode(UnsafeBuffer buffer, int offset) {
@@ -34,6 +48,8 @@ public class Order extends OrderMessage implements Comparable<Order>{
         encoder.qty(qty);
         encoder.side(side);
         encoder.price(price);
+        encoder.stpfId(STPF_ID);
+        encoder.stpfInstruction(STPF_Instruction);
         return encoder.encodedLength();
     }
 
@@ -42,10 +58,11 @@ public class Order extends OrderMessage implements Comparable<Order>{
         double qty = decoder.qty();
         OrderSide side = decoder.side();
         double price = decoder.price();
-        Order order = new Order(ticker, qty, side, price);
+        String stpfId = decoder.stpfId();
+        STPFInstruction stpfInstr = decoder.stpfInstruction();
+        Order order = new Order(ticker, qty, side, price, stpfId, stpfInstr);
         return order;
     }
-
 
     @Override
     public int compareTo(Order order) {

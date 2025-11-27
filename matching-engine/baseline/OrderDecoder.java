@@ -6,7 +6,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public final class OrderDecoder
 {
-    public static final int BLOCK_LENGTH = 21;
+    public static final int BLOCK_LENGTH = 28;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
@@ -389,6 +389,165 @@ public final class OrderDecoder
     }
 
 
+    public static int stpfIdId()
+    {
+        return 5;
+    }
+
+    public static int stpfIdSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int stpfIdEncodingOffset()
+    {
+        return 21;
+    }
+
+    public static int stpfIdEncodingLength()
+    {
+        return 6;
+    }
+
+    public static String stpfIdMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public static byte stpfIdNullValue()
+    {
+        return (byte)0;
+    }
+
+    public static byte stpfIdMinValue()
+    {
+        return (byte)32;
+    }
+
+    public static byte stpfIdMaxValue()
+    {
+        return (byte)126;
+    }
+
+    public static int stpfIdLength()
+    {
+        return 6;
+    }
+
+
+    public byte stpfId(final int index)
+    {
+        if (index < 0 || index >= 6)
+        {
+            throw new IndexOutOfBoundsException("index out of range: index=" + index);
+        }
+
+        final int pos = offset + 21 + (index * 1);
+
+        return buffer.getByte(pos);
+    }
+
+
+    public static String stpfIdCharacterEncoding()
+    {
+        return java.nio.charset.StandardCharsets.US_ASCII.name();
+    }
+
+    public int getStpfId(final byte[] dst, final int dstOffset)
+    {
+        final int length = 6;
+        if (dstOffset < 0 || dstOffset > (dst.length - length))
+        {
+            throw new IndexOutOfBoundsException("Copy will go out of range: offset=" + dstOffset);
+        }
+
+        buffer.getBytes(offset + 21, dst, dstOffset, length);
+
+        return length;
+    }
+
+    public String stpfId()
+    {
+        final byte[] dst = new byte[6];
+        buffer.getBytes(offset + 21, dst, 0, 6);
+
+        int end = 0;
+        for (; end < 6 && dst[end] != 0; ++end);
+
+        return new String(dst, 0, end, java.nio.charset.StandardCharsets.US_ASCII);
+    }
+
+
+    public int getStpfId(final Appendable value)
+    {
+        for (int i = 0; i < 6; ++i)
+        {
+            final int c = buffer.getByte(offset + 21 + i) & 0xFF;
+            if (c == 0)
+            {
+                return i;
+            }
+
+            try
+            {
+                value.append(c > 127 ? '?' : (char)c);
+            }
+            catch (final java.io.IOException ex)
+            {
+                throw new java.io.UncheckedIOException(ex);
+            }
+        }
+
+        return 6;
+    }
+
+
+    public static int stpfInstructionId()
+    {
+        return 6;
+    }
+
+    public static int stpfInstructionSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int stpfInstructionEncodingOffset()
+    {
+        return 27;
+    }
+
+    public static int stpfInstructionEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String stpfInstructionMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public short stpfInstructionRaw()
+    {
+        return ((short)(buffer.getByte(offset + 27) & 0xFF));
+    }
+
+    public STPFInstruction stpfInstruction()
+    {
+        return STPFInstruction.get(((short)(buffer.getByte(offset + 27) & 0xFF)));
+    }
+
+
     public String toString()
     {
         if (null == buffer)
@@ -444,6 +603,15 @@ public final class OrderDecoder
         builder.append('|');
         builder.append("price=");
         builder.append(this.price());
+        builder.append('|');
+        builder.append("stpfId=");
+        for (int i = 0; i < stpfIdLength() && this.stpfId(i) > 0; i++)
+        {
+            builder.append((char)this.stpfId(i));
+        }
+        builder.append('|');
+        builder.append("stpfInstruction=");
+        builder.append(this.stpfInstruction());
 
         limit(originalLimit);
 
