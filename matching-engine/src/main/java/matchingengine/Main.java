@@ -23,7 +23,7 @@ public class Main {
         int port = 1234;
         OrderEncoder encoder = new OrderEncoder();
         OrderCancelEncoder cancelEncoder = new OrderCancelEncoder();
-        UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(1024));
+        UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(29));
         UnsafeBuffer bufferCancel = new UnsafeBuffer(ByteBuffer.allocateDirect(16));
 
         try (Socket socket = new Socket("localhost", port)) {
