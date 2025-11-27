@@ -6,9 +6,11 @@ import baseline.OrderCancelDecoder;
 
 import org.agrona.concurrent.UnsafeBuffer;
 
+import lombok.Getter;
 
+@Getter
 public class OrderCancel extends OrderMessage{
-    private static long orderId;
+    private long orderId;
 
     public OrderCancel(long orderId) {
         this.orderId = orderId;

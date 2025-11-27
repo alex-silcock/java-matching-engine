@@ -58,6 +58,29 @@ public class OrderBook {
         return -1;
     }
 
+    public void cancel(OrderCancel orderCancel) {
+        long orderId = orderCancel.getOrderId();
+        Order toRemove = null;
+        boolean removed = false;
+        for (Order order : this.bids) {
+            if (order.getOrderId() == orderId) {
+                toRemove = order;
+            }
+        }
+        if (toRemove != null) {
+            this.bids.remove(toRemove);
+            return;
+        }
+
+        for (Order order : this.asks) {
+            if (order.getOrderId() == orderId) {
+                toRemove = order;
+            }
+        }
+        this.asks.remove(toRemove);
+        return;
+    }
+
     public ArrayList<Order> add(Order incomingOrder) {
 
         if (incomingOrder == null) {return null ;}

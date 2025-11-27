@@ -44,9 +44,13 @@ public class MarketListener {
             try {
                 OrderMessage message = orderQueue.take();
                 if (message instanceof Order order) {
-                    pubOrder(order);
                     ArrayList<Order> ordersTraded = orderBook.add(order);
+                    pubOrder(order);
                     pubTrade(order, ordersTraded);
+                } else if (message instanceof OrderCancel orderCancel) {
+                    // pubCancel(orderCancel);
+                    orderBook.cancel(orderCancel); // should return true if able to cancel - if order has not been touched
+                    pubOrder(orderCancel);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -72,15 +76,27 @@ public class MarketListener {
         }
     }
 
-    private void pubOrder(Order order) {
-        Object[] tpObjOrder = new Object[] {
-            new c.Timespan(),
-            order.getTicker(),
-            order.getSide().toString(),
-            order.getPrice(),
-            order.getQty(),
-            order.getOrderId()
-        };
+    private void pubOrder(OrderMessage orderMessage) {
+        Object[] tpObjOrder = new Object[6];
+        if (orderMessage instanceof Order order) {
+            tpObjOrder = new Object[] {
+                new c.Timespan(),
+                order.getTicker(),
+                order.getSide().toString(),
+                order.getPrice(),
+                order.getQty(),
+                order.getOrderId()
+            };
+        } else if (orderMessage instanceof OrderCancel orderCancel) {
+            tpObjOrder = new Object[] {
+                new c.Timespan(),
+                " ",
+                "CANCEL",
+                (double)-1,
+                (double)-1,
+                orderCancel.getOrderId()
+            };
+        }
         kh.publishToTp("orders", tpObjOrder);
     }
 
@@ -112,15 +128,14 @@ public class MarketListener {
                 byte[] bytes = new byte[len];
                 in.readFully(bytes);
                 UnsafeBuffer buffer = new UnsafeBuffer(bytes);
-
-                headerDecoder.wrap(buffer, 0);
+                headerDecoder.wrap(buffer, 0); // header starts at 0 offset
                 int templateId = headerDecoder.templateId();
-                System.out.println(templateId);
 
                 switch (templateId) {
-                    case 19536: // Normal Order
-                        clientDecoder.wrap(buffer, 0, clientDecoder.BLOCK_LENGTH, clientDecoder.SCHEMA_VERSION);
+                    case OrderDecoder.TEMPLATE_ID:
+                        clientDecoder.wrap(buffer, headerDecoder.ENCODED_LENGTH, clientDecoder.BLOCK_LENGTH, clientDecoder.SCHEMA_VERSION);
                         Order order = Order.decode(clientDecoder);
+
                         long orderId = snowflake.nextId();
                         order.setOrderId(orderId);
                         order.setOrderReceivedTime();
@@ -141,9 +156,11 @@ public class MarketListener {
                         out.flush();
                         break;
 
-                    case 2: // Cancel Order
-                        clientDecoderCancel.wrap(buffer, 0, clientDecoderCancel.BLOCK_LENGTH, clientDecoderCancel.SCHEMA_VERSION);
+                    case OrderCancelDecoder.TEMPLATE_ID:
+                        clientDecoderCancel.wrap(buffer, headerDecoder.ENCODED_LENGTH, clientDecoderCancel.BLOCK_LENGTH, clientDecoderCancel.SCHEMA_VERSION);
                         OrderCancel orderCancel = OrderCancel.decode(clientDecoderCancel);
+                        System.out.println("[MarketListener] Received Cancel: " + orderCancel.getOrderId());
+                        boolean enqueuedCancel = orderQueue.offer(orderCancel);
                         break;
                     default:
                         throw new IllegalArgumentException("Template not found");
