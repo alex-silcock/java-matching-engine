@@ -23,19 +23,15 @@ public class OrderBook {
     }
 
     public Order getBestBidOrder() {
-        if (!this.bids.isEmpty()) {
-            return this.bids.first();
-        } else {
-            return null;
-        }
+        if (this.bids.isEmpty()) return null;
+        return this.bids.first();
     }
+
     public Order getBestOfferOrder() {
-        if (!this.asks.isEmpty()) {
-            return this.asks.first();
-        } else {
-            return null;
-        }
+        if (this.asks.isEmpty()) return null;
+        return this.asks.first();
     }
+
     public double getBestBid() {
         try {
             return this.bids.first().getPrice();
@@ -56,15 +52,10 @@ public class OrderBook {
         double bestBid = this.getBestBid();
         double bestOffer = this.getBestOffer();
 
-        if (bestBid == -1 && bestOffer == -1) {
-            return -1;
-        } else if (bestBid == -1) {
-            return bestOffer;
-        } else if (bestOffer == -1) {
-            return bestBid;
-        } else {
+        if ((bestBid != -1) && (bestOffer != -1)) {
             return (bestBid + bestOffer) / 2;
         }
+        return -1;
     }
 
     public ArrayList<Order> add(Order incomingOrder) {
