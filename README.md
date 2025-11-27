@@ -14,9 +14,9 @@ There are two types of orders:
 - OrderCancel
 
 ##### Order
-An order is parameterised by a ticker, quantity, side and price.
+An order is parameterised by a ticker, quantity, side, price, stpfId [self-trading prevention functionlity](https://www.ice.com/publicdocs/futures/IFEU_Self_Trade_Prevention_Functionality_FAQ.pdf), and stpf instruction.
 
-The order message is 29 bytes, eight for the header, and 21 for the message itself.
+The order message is 36 bytes, eight for the header, and 28 for the message itself.
 
 ##### OrderCancel
 An order cancel is parameterised by an orderId.
@@ -31,9 +31,10 @@ The other thread reads from this queue and adds orders to the book.
 
 By having the engine single-threaded, there is no need to synchronise any methods of the order book, as we can guarantee there will not be any race-conditions.
 
-When an order hits the engine, the engine sets an attribute of when the order was received, as well as generates a unique, time-ordered orderID (a Snowflake ID).
+When an order hits the engine, the engine sets an attribute of when the order was received, as well as generates a unique, time-ordered orderID (a Snowflake ID). Orders are published to a KDB tickerplant, to an `orders` table.
+Similarly, when a trade occurs, the two orders that caused the trade are published to a `trades` table, along with the quantity and price that the trade occured at.
 
-When the engine receives an order, it also publishes it to a KDB tickerplant, to an `orders` table. Similarly, when a trade occurs, the two orders that caused the trade are published to a `trades` table, along with the quantity and price that the trade occured at.
+To prevent self-matching, orders with the same stpf id do not trade, and the corresponding stpf instruction occurs on the given orders. This is published to a `marketEvents` table.
 
 
 ### Usage

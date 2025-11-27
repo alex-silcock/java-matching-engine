@@ -24,7 +24,7 @@ public class Main {
         int port = 1234;
         OrderEncoder encoder = new OrderEncoder();
         OrderCancelEncoder cancelEncoder = new OrderCancelEncoder();
-        UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(64));
+        UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(36));
         UnsafeBuffer bufferCancel = new UnsafeBuffer(ByteBuffer.allocateDirect(16));
 
         try (Socket socket = new Socket("localhost", port)) {
@@ -57,7 +57,7 @@ public class Main {
                     .stpfId(stpf_id) // 6 bytes
                     .stpfInstruction(stpfInstruction); // 1 byte
                     
-                int len = header.ENCODED_LENGTH + encoder.encodedLength(); // 8 bytes header + 27 bytes message
+                int len = header.ENCODED_LENGTH + encoder.encodedLength(); // 8 bytes header + 28 bytes message
                 byte[] bytes = new byte[len];
                 buffer.getBytes(0, bytes);
 
