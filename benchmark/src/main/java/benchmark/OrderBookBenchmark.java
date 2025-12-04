@@ -53,29 +53,25 @@ import baseline.OrderSide;
 import baseline.STPFInstruction;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 @Fork(value = 2)
-@Warmup(iterations = 2)
-@Measurement(iterations = 1)
+@Warmup(iterations = 5, time = 1)
+@Measurement(iterations = 5, time = 1)
 @Threads(3)
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
 public class OrderBookBenchmark {
 
   private OrderBook orderBook;
+  private ArrayList<Order> orders;
 
   @Setup(Level.Iteration)
   public void setup() {
     orderBook = new OrderBook("AAPL");
-  }
-
-  @Benchmark
-  public void addOrders() {
-    ArrayList<Order> orders = new ArrayList<Order>();
-    ArrayList<Order> fills = new ArrayList<Order>();
-
+    orders = new ArrayList<Order>();
     int min = 1;
     int max = 20;
     int totalOrders = 250_000;
@@ -92,6 +88,14 @@ public class OrderBookBenchmark {
 
       Order order = new Order("AAPL", 1, side, 1, "A12345", STPFInstruction.RRO);
       order.setOrderReceivedTime();
+      orders.add(order);
+    }
+  }
+
+  @Benchmark
+  public void addOrders() {
+    ArrayList<Order> fills = new ArrayList<Order>();
+    for (Order order : orders) {
       orderBook.add(order, fills);
     }
   }
