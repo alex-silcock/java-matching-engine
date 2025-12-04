@@ -18,7 +18,6 @@ import lombok.Setter;
 public class Order extends OrderMessage implements Comparable<Order>{
     public final String ticker;
     private double qty;
-    private long orderId;
     private final OrderSide side;
     private final double price;
     private final String STPF_ID;
@@ -39,6 +38,10 @@ public class Order extends OrderMessage implements Comparable<Order>{
 
     public STPFInstruction getStpfInstruction() {
         return this.STPF_Instruction;
+    }
+
+    public void reduceQty(double amount) {
+        this.qty -= amount;
     }
 
     public int encode(UnsafeBuffer buffer, int offset) {
@@ -74,10 +77,7 @@ public class Order extends OrderMessage implements Comparable<Order>{
                 return priceComparison;
             }
         }
-
-        int timestampComparison = this.getOrderReceivedTime().compareTo(order.getOrderReceivedTime());
-        if (timestampComparison != 0) return timestampComparison;
-        // default to return on Snowflake ID
+        // default to return on Snowflake ID - time ordered
         return Long.compare(this.getOrderId(), order.getOrderId());
     }
 

@@ -15,6 +15,7 @@ public class OrderTest {
     public void testBestBid() {
         OrderBook book = new OrderBook("AAPL");
         ArrayList<Order> orders = new ArrayList<Order>();
+        ArrayList<Order> fills = new ArrayList<Order>();
 
         orders.add(new Order("AAPL", 1, OrderSide.BUY, 1, "A12345", STPFInstruction.RRO));
         orders.add(new Order("AAPL", 0.5, OrderSide.BUY, 0.5, "A12345", STPFInstruction.RRO));
@@ -22,7 +23,7 @@ public class OrderTest {
 
         for (Order order : orders) {
             order.setOrderReceivedTime();
-            book.add(order);
+            book.add(order, fills);
         }
         double bestBid = book.getBestBid();
         assertEquals(1, bestBid, 0.000001d);
@@ -31,13 +32,15 @@ public class OrderTest {
     public void testBestOffer() {
         OrderBook book = new OrderBook("AAPL");
         ArrayList<Order> orders = new ArrayList<Order>();
+        ArrayList<Order> fills = new ArrayList<Order>();
 
-        orders.add(new Order("AAPL", 0.5, OrderSide.BUY, 0.5, "A12345", STPFInstruction.RRO));
+
+        orders.add(new Order("AAPL", 1, OrderSide.BUY, 1, "A12345", STPFInstruction.RRO));
         orders.add(new Order("AAPL", 5, OrderSide.SELL, 5, "B12345", STPFInstruction.RRO));
 
         for (Order order : orders) {
             order.setOrderReceivedTime();
-            book.add(order);
+            book.add(order, fills);
         }
 
         double bestOffer = book.getBestOffer();
@@ -48,13 +51,15 @@ public class OrderTest {
         OrderBook book = new OrderBook("AAPL");
 
         ArrayList<Order> orders = new ArrayList<Order>();
+        ArrayList<Order> fills = new ArrayList<Order>();
+
 
         orders.add(new Order("AAPL", 5, OrderSide.SELL, 1, "A12345", STPFInstruction.RRO));
         orders.add(new Order("AAPL", 1, OrderSide.BUY, 1, "B12345", STPFInstruction.RRO));
 
         for (Order order : orders) {
             order.setOrderReceivedTime();
-            book.add(order);
+            book.add(order, fills);
         }
         double bestOfferSize = book.getBestOfferOrder().getQty();
         assertEquals(4, bestOfferSize, 0.000001d);
@@ -63,13 +68,15 @@ public class OrderTest {
     public void simpleSpreadCross2() {
         OrderBook book = new OrderBook("AAPL");
         ArrayList<Order> orders = new ArrayList<Order>();
+        ArrayList<Order> fills = new ArrayList<Order>();
+
 
         orders.add(new Order("AAPL", 1.5, OrderSide.BUY, 1.5, "A12345", STPFInstruction.RRO));
         orders.add(new Order("AAPL", 5, OrderSide.SELL, 1, "B12345", STPFInstruction.RRO));
 
         for (Order order : orders) {
             order.setOrderReceivedTime();
-            book.add(order);
+            book.add(order, fills);
         }
         double bestOfferSize = book.getBestOfferOrder().getQty();
         assertEquals(3.5, bestOfferSize, 0.000001d);
@@ -79,6 +86,7 @@ public class OrderTest {
     public void simpleSpreadCross3() {
         OrderBook book = new OrderBook("AAPL");
         ArrayList<Order> orders = new ArrayList<Order>();
+        ArrayList<Order> fills = new ArrayList<Order>();
 
         orders.add(new Order("AAPL", 3, OrderSide.SELL, 2, "A12345", STPFInstruction.RRO));
         orders.add(new Order("AAPL", 6, OrderSide.BUY, 1.5, "B12345", STPFInstruction.RRO));
@@ -88,7 +96,7 @@ public class OrderTest {
 
         for (Order order : orders) {
             order.setOrderReceivedTime();
-            book.add(order);
+            book.add(order, fills);
         }
 
         double bestOfferSize = book.getBestOfferOrder().getQty();
@@ -99,5 +107,26 @@ public class OrderTest {
         assertEquals(2.0, book.getBestOfferOrder().getPrice(), 0.000001d);
     }
 
-    // TODO - add tests here for self-trading prevention
+    @Test
+    public void noMatchSameSTPFId() {
+        System.out.println("=== Test for STPF ID match ===");
+        OrderBook book = new OrderBook("AAPL");
+        ArrayList<Order> orders = new ArrayList<Order>();
+        ArrayList<Order> fills = new ArrayList<Order>();
+
+        orders.add(new Order("AAPL", 3, OrderSide.BUY, 1, "C12345", STPFInstruction.RRO));
+        orders.add(new Order("AAPL", 3, OrderSide.SELL, 1, "C12345", STPFInstruction.RRO));
+
+        for (Order order : orders) {
+            order.setOrderReceivedTime();
+            book.add(order, fills);
+        }
+
+        double bestOfferSize = book.getBestOfferOrder().getQty();
+        double bestBidSize = book.getBestBidOrder().getQty();
+        assertEquals(3, bestOfferSize, 0.000001d);
+        assertEquals(1, book.getBestOfferOrder().getPrice(), 0.000001d);
+        assertEquals(3, bestBidSize, 0.000001d);
+        assertEquals(1, book.getBestBidOrder().getPrice(), 0.000001d);
+    }
 }

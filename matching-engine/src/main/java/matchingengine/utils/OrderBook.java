@@ -58,7 +58,7 @@ public class OrderBook {
         return -1;
     }
 
-    public void cancel(OrderCancel orderCancel) {
+    public void cancel(OrderCancel orderCancel) { // should just take id and cancel that
         long orderId = orderCancel.getOrderId();
         Order toRemove = null;
 
@@ -81,98 +81,218 @@ public class OrderBook {
         return;
     }
 
-    public ArrayList<Order> add(Order incomingOrder) {
+    public int add(Order incomingOrder, List<Order> fills) {
+        fills.clear();
 
-        if (incomingOrder == null) {return null ;}
-        ArrayList<Order> ordersTraded = new ArrayList<>();
+        OrderSide side = incomingOrder.getSide();
 
-        if (incomingOrder.getSide() == OrderSide.BUY) {
-            double bestOffer = this.getBestOffer();
+        // buy side
+        if (side == OrderSide.BUY) {
+            // no cross
+            Order bestOfferOrder = this.getBestOfferOrder();
+            if (bestOfferOrder == null || incomingOrder.getPrice() < bestOfferOrder.getPrice()) {
+                this.bids.add(incomingOrder);
+                return 0;
+            }
+            // skip stfp matching orders
+            while (bestOfferOrder != null && incomingOrder.getStpfId().equals(bestOfferOrder.getStpfId())) {
+                bestOfferOrder = this.asks.higher(bestOfferOrder);
+            }
+
+            if (bestOfferOrder == null) {
+                this.bids.add(incomingOrder);
+                return 0;
+            }
+
+            // matching loop
+            double quantityLeftToTrade = incomingOrder.getQty();
+            double bestOfferOrderQty = bestOfferOrder.getQty();
+
+            while (quantityLeftToTrade > 0) {
+                // full consumption
+                if (quantityLeftToTrade >= bestOfferOrderQty) {
+                    this.asks.remove(bestOfferOrder);
+                    fills.add(bestOfferOrder);
+                    quantityLeftToTrade -= bestOfferOrderQty;
+                    incomingOrder.setQty(quantityLeftToTrade);
+
+                    bestOfferOrder = this.getBestOfferOrder();
+                    if (bestOfferOrder == null) {
+                        this.bids.add(incomingOrder);
+                        return fills.size();
+                    }
+                } 
+                // partial fill - incoming order added to bids
+                // improvement here: FOK
+                else {
+                    fills.add(bestOfferOrder);
+                    bestOfferOrder.reduceQty(quantityLeftToTrade);
+                    return fills.size();
+                }
+
+            }
+            return fills.size();
+        } else {
+            // sell side
+            // no cross
+            Order bestBidOrder = this.getBestBidOrder();
+            if (bestBidOrder == null || incomingOrder.getPrice() > bestBidOrder.getPrice()) {
+                this.asks.add(incomingOrder);
+                return 0;
+            }
+            // skip stfp matching orders
+            while (bestBidOrder != null && incomingOrder.getStpfId().equals(bestBidOrder.getStpfId())) {
+                bestBidOrder = this.asks.higher(bestBidOrder);
+            }
+
+            if (bestBidOrder == null) {
+                this.asks.add(incomingOrder);
+                return 0;
+            }
+
+            // matching loop
+            double quantityLeftToTrade = incomingOrder.getQty();
+            double bestBidOrderQty = bestBidOrder.getQty();
+
+            while (quantityLeftToTrade > 0) {
+                // full consumption
+                if (quantityLeftToTrade >= bestBidOrderQty) {
+                    this.bids.remove(bestBidOrder);
+                    fills.add(bestBidOrder);
+                    quantityLeftToTrade -= bestBidOrderQty;
+                    incomingOrder.setQty(quantityLeftToTrade);
+
+                    bestBidOrder = this.getBestBidOrder();
+                    if (bestBidOrder == null) {
+                        this.asks.add(incomingOrder);
+                        return fills.size();
+                    }
+                } 
+                // partial fill - incoming order added to bids
+                // improvement here: FOK
+                else {
+                    fills.add(bestBidOrder);
+                    bestBidOrder.reduceQty(quantityLeftToTrade);
+                    return fills.size();
+                }
+
+            }
+            return fills.size();
+        }
+    }
+
+    public int add2(Order incomingOrder, List<Order> fills) {
+        fills.clear();
+        int fillCount = 0;
+        if (incomingOrder == null) return 0;
+
+        OrderSide side = incomingOrder.getSide();
+        if (side == OrderSide.BUY) {
+            double bestOfferPrice = this.getBestOffer();
             Order bestOfferOrder = this.getBestOfferOrder();
             double incomingOrderPrice = incomingOrder.getPrice();
 
-            if (bestOfferOrder == null || incomingOrderPrice < bestOffer) {
+            // incoming buy price is less than the price of the best offer - orders shouldn't cross
+            if (bestOfferOrder == null || incomingOrderPrice < bestOfferPrice) {
+                System.out.println("B - adding bid as no spread cross");
                 this.bids.add(incomingOrder);
-
-            } else if (incomingOrderPrice >= bestOffer) {
+                return 0;
+            } else if (incomingOrderPrice >= bestOfferPrice) {
                 double quantityLeftToTrade = incomingOrder.getQty();
-                Order headAskOrder = this.asks.first();
 
-                // if matching stpfIds then find the next order
-                while (incomingOrder.getStpfId().equals(headAskOrder.getStpfId())) {
-                    headAskOrder = this.asks.higher(headAskOrder);
-                    if (headAskOrder == null) return null;
+                // walk the book until find an order that can match
+                while (incomingOrder.getStpfId().equals(bestOfferOrder.getStpfId())) {
+                    bestOfferOrder = this.asks.higher(bestOfferOrder);
+                    // for now just add the order
+                    if (bestOfferOrder == null) {
+                        this.bids.add(incomingOrder);
+                        return 0;
+                    }
                 }
 
                 while (quantityLeftToTrade > 0) {
-                    double headAskOrderQty = headAskOrder.getQty();
+                    double bestOfferOrderQty = bestOfferOrder.getQty();
 
-                    if (quantityLeftToTrade >= headAskOrderQty) {
-                        ordersTraded.add(this.asks.pollFirst());
-                        quantityLeftToTrade -= headAskOrderQty;
+                    // incoming order is larger than best offer
+                    if (quantityLeftToTrade >= bestOfferOrderQty) {
+                        fills.add(bestOfferOrder);
+                        fillCount++;
+                        this.asks.remove(bestOfferOrder);
+                        quantityLeftToTrade -= bestOfferOrderQty;
                         incomingOrder.setQty(quantityLeftToTrade);
 
                         bestOfferOrder = this.getBestOfferOrder();
-                        if (bestOfferOrder != null) {
-                            headAskOrder = bestOfferOrder;
-                        } else {
+                        if (bestOfferOrder == null) {
                             this.bids.add(incomingOrder);
-                            return ordersTraded;
+                            return fillCount;
                         }
-                    } else {
-                        ordersTraded.add(this.asks.first());
-                        double newQty = headAskOrder.getQty() - incomingOrder.getQty();
-                        headAskOrder.setQty(newQty);
-                        quantityLeftToTrade = 0;
+                    } 
+                    // incoming order is smaller than best offer
+                    else {
+                        fills.add(bestOfferOrder);
+                        bestOfferOrder.reduceQty(quantityLeftToTrade);
+                        return fillCount;
                     }
 
                 }
-
             }
-        }
-        else {
-            double bestBid = this.getBestBid();
+            return fillCount;
+
+        } else if (side == OrderSide.SELL) {
+
+            double bestBidPrice = this.getBestBid();
+            Order bestBidOrder = this.getBestBidOrder();
             double incomingOrderPrice = incomingOrder.getPrice();
 
-            if (bestBid == -1 || incomingOrderPrice > bestBid) {
+            if (bestBidOrder == null || incomingOrderPrice > bestBidPrice) {
+                System.out.println("adding offer to book as no spread cross");
                 this.asks.add(incomingOrder);
-
-            } else if (incomingOrderPrice <= bestBid) {
+                return 0;
+            } else if (incomingOrderPrice <= bestBidPrice) {
                 double quantityLeftToTrade = incomingOrder.getQty();
-                Order headBidOrder = this.bids.first();
 
-                // if matching stpfIds then find the next order
-                while (incomingOrder.getStpfId().equals(headBidOrder.getStpfId())) {
-                    headBidOrder = this.bids.higher(headBidOrder);
-                    if (headBidOrder == null) return null;
+                // walk the book until find an order that can match
+                while (incomingOrder.getStpfId().equals(bestBidOrder.getStpfId())) {
+                    System.out.println("S - finding non matching trade");
+                    bestBidOrder = this.bids.higher(bestBidOrder);
+                    System.out.println(bestBidOrder);
+                    // for now just add the order
+                    if (bestBidOrder == null) {
+                        this.asks.add(incomingOrder);
+                        System.out.println("S - null best bid");
+                        return 0;
+                    }
                 }
 
                 while (quantityLeftToTrade > 0) {
-                    double headBidOrderQty = headBidOrder.getQty();
+                    double bestBidOrderQty = bestBidOrder.getQty();
 
-                    if (quantityLeftToTrade >= headBidOrderQty) {
-                        ordersTraded.add(this.bids.pollFirst());
-                        quantityLeftToTrade -= headBidOrderQty;
+                    // incoming order is larger than best bid
+                    if (quantityLeftToTrade >= bestBidOrderQty) {
+                        fills.add(bestBidOrder);
+                        fillCount++;
+                        this.bids.remove(bestBidOrder);
+                        quantityLeftToTrade -= bestBidOrderQty;
                         incomingOrder.setQty(quantityLeftToTrade);
 
-                        Order bestBidOrder = this.getBestBidOrder();
-                        if (bestBidOrder != null) {
-                            headBidOrder = bestBidOrder;
-                        } else {
+                        bestBidOrder = this.getBestBidOrder();
+                        if (bestBidOrder == null) {
                             this.asks.add(incomingOrder);
-                            return ordersTraded;
+                            return fillCount;
                         }
-                    } else {
-                        ordersTraded.add(headBidOrder);
-                        double newQty = headBidOrder.getQty() - incomingOrder.getQty();
-                        headBidOrder.setQty(newQty);
-                        quantityLeftToTrade = 0;
+                    } 
+                    // incoming order is smaller than best bid
+                    else {
+                        fills.add(bestBidOrder);
+                        bestBidOrder.reduceQty(quantityLeftToTrade);
+                        return fillCount;
                     }
 
                 }
-
             }
+                return fillCount;
+
         }
-        return ordersTraded;
+        return fillCount;
     }
 }

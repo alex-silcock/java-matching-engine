@@ -3,12 +3,13 @@ package matchingengine.utils;
 import org.agrona.concurrent.UnsafeBuffer;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.Setter;
 
 
-@Getter
+@Getter @Setter
 public class OrderMessage {
     private LocalDateTime orderReceivedTime;
-    // TODO - move orderId here
+    protected long orderId;
 
     public int encode(UnsafeBuffer buffer, int offset) {return -1;}
 

@@ -40,13 +40,14 @@ public class MarketListener {
     }
 
     public void readQueue() {
+        ArrayList<Order> fills = new ArrayList<Order>(1000); // assume max fills is 1000 per order
         while (true) {
             try {
                 OrderMessage message = orderQueue.take();
                 if (message instanceof Order order) {
-                    ArrayList<Order> ordersTraded = orderBook.add(order);
+                    int fillCount = orderBook.add(order, fills);
                     pubOrder(order);
-                    if (ordersTraded != null) {pubTrade(order, ordersTraded);}
+                    if (fillCount > 0) {pubTrade(order, fills);}
                 } else if (message instanceof OrderCancel orderCancel) {
                     // pubCancel(orderCancel);
                     orderBook.cancel(orderCancel); // should return true if able to cancel - if order has not been touched
@@ -77,6 +78,7 @@ public class MarketListener {
     }
 
     private void pubOrder(OrderMessage orderMessage) {
+        // we know the exact length of this, can be passed in as an arg and don't have to reallocate
         Object[] tpObjOrder = new Object[8];
         if (orderMessage instanceof Order order) {
             tpObjOrder = new Object[] {
@@ -179,10 +181,6 @@ public class MarketListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void onOrderReceived(Order order) {
-        this.orderBook.add(order);
     }
 
     public static void main(String[] args) {

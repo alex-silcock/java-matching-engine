@@ -10,8 +10,6 @@ import lombok.Getter;
 
 @Getter
 public class OrderCancel extends OrderMessage{
-    private long orderId;
-
     public OrderCancel(long orderId) {
         this.orderId = orderId;
     }
