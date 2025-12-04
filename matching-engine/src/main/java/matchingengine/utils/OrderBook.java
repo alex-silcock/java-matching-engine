@@ -95,8 +95,10 @@ public class OrderBook {
                 return 0;
             }
             // skip stfp matching orders
-            while (bestOfferOrder != null && incomingOrder.getStpfId().equals(bestOfferOrder.getStpfId())) {
-                bestOfferOrder = this.asks.higher(bestOfferOrder);
+            if (incomingOrder.getStpfId() != null) {
+                while (bestOfferOrder != null && incomingOrder.getStpfId().equals(bestOfferOrder.getStpfId())) {
+                    bestOfferOrder = this.asks.higher(bestOfferOrder);
+                }
             }
 
             if (bestOfferOrder == null) {
@@ -141,8 +143,10 @@ public class OrderBook {
                 return 0;
             }
             // skip stfp matching orders
-            while (bestBidOrder != null && incomingOrder.getStpfId().equals(bestBidOrder.getStpfId())) {
-                bestBidOrder = this.asks.higher(bestBidOrder);
+            if (incomingOrder.getStpfId() != null) {
+                while (bestBidOrder != null && incomingOrder.getStpfId().equals(bestBidOrder.getStpfId())) {
+                    bestBidOrder = this.asks.higher(bestBidOrder);
+                }
             }
 
             if (bestBidOrder == null) {

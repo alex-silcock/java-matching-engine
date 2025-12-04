@@ -35,8 +35,8 @@ public class OrderTest {
         ArrayList<Order> fills = new ArrayList<Order>();
 
 
-        orders.add(new Order("AAPL", 1, OrderSide.BUY, 1, "A12345", STPFInstruction.RRO));
-        orders.add(new Order("AAPL", 5, OrderSide.SELL, 5, "B12345", STPFInstruction.RRO));
+        orders.add(new Order("AAPL", 1, OrderSide.BUY, 1, null, STPFInstruction.RRO));
+        orders.add(new Order("AAPL", 5, OrderSide.SELL, 5, null, STPFInstruction.RRO));
 
         for (Order order : orders) {
             order.setOrderReceivedTime();

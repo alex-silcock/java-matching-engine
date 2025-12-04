@@ -60,18 +60,19 @@ import java.util.concurrent.ThreadLocalRandom;
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
 @Threads(3)
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
 public class OrderBookBenchmark {
 
   private OrderBook orderBook;
   private ArrayList<Order> orders;
+  private ArrayList<Order> fills;
 
   @Setup(Level.Iteration)
   public void setup() {
     orderBook = new OrderBook("AAPL");
-    orders = new ArrayList<Order>();
+    orders = new ArrayList<Order>(250_000);
+    fills = new ArrayList<Order>(100_000);
+
     int min = 1;
     int max = 20;
     int totalOrders = 250_000;
@@ -86,19 +87,29 @@ public class OrderBookBenchmark {
       qty = Math.round(qty * 100.0) / 100.0;
       price = Math.round(price * 100.0) / 100.0;
 
-      Order order = new Order("AAPL", 1, side, 1, "A12345", STPFInstruction.RRO);
+      Order order = new Order("AAPL", 1, side, 1, null, STPFInstruction.RRO);
       order.setOrderReceivedTime();
       orders.add(order);
     }
   }
 
   @Benchmark
+  @BenchmarkMode(Mode.AverageTime)
+  @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public void addOrders() {
-    ArrayList<Order> fills = new ArrayList<Order>();
     for (Order order : orders) {
       orderBook.add(order, fills);
     }
   }
+
+  // @Benchmark
+  // @BenchmarkMode(Mode.Throughput)
+  // @OutputTimeUnit(TimeUnit.SECONDS)
+  // public void addSingleOrder() {
+  //   Order order = new Order("AAPL", 1, OrderSide.BUY, 1, "A12345", STPFInstruction.RRO);
+  //   order.setOrderReceivedTime();
+  //   orderBook.add(order, fills);
+  // }
 
   public static void main(String[] args) throws Exception {
     org.openjdk.jmh.Main.main(args);
