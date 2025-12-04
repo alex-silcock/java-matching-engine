@@ -1,0 +1,13 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>java-matching-engine</groupId>
+    <artifactId>java-matching-engine</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>matching-engine</module>
+        <module>benchmark</module>
+    </modules>
+</project>

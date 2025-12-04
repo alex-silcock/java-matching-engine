@@ -109,7 +109,6 @@ public class OrderTest {
 
     @Test
     public void noMatchSameSTPFId() {
-        System.out.println("=== Test for STPF ID match ===");
         OrderBook book = new OrderBook("AAPL");
         ArrayList<Order> orders = new ArrayList<Order>();
         ArrayList<Order> fills = new ArrayList<Order>();

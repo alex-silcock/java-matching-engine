@@ -41,17 +41,22 @@ public class MarketListener {
 
     public void readQueue() {
         ArrayList<Order> fills = new ArrayList<Order>(1000); // assume max fills is 1000 per order
+        Object[] tpObjOrder = new Object[8];
+        Object[] tpObjTrade = new Object[6];
+        long[] tradeIds = new long[2];
+        String[] stpfIds = new String[2];
+
         while (true) {
             try {
                 OrderMessage message = orderQueue.take();
                 if (message instanceof Order order) {
                     int fillCount = orderBook.add(order, fills);
-                    pubOrder(order);
-                    if (fillCount > 0) {pubTrade(order, fills);}
+                    pubOrder(order, tpObjOrder);
+                    if (fillCount > 0) {pubTrade(order, fills, tpObjTrade, tradeIds, stpfIds);}
                 } else if (message instanceof OrderCancel orderCancel) {
                     // pubCancel(orderCancel);
                     orderBook.cancel(orderCancel); // should return true if able to cancel - if order has not been touched
-                    pubOrder(orderCancel);
+                    pubOrder(orderCancel, tpObjOrder);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -66,7 +71,6 @@ public class MarketListener {
                 try {
                     Socket socket = serverSocket.accept();
                     System.out.println("[MarketListener] Client connected " + socket.getInetAddress());
-
                     new Thread(() -> handleClient(socket)).start();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -77,49 +81,50 @@ public class MarketListener {
         }
     }
 
-    private void pubOrder(OrderMessage orderMessage) {
-        // we know the exact length of this, can be passed in as an arg and don't have to reallocate
-        Object[] tpObjOrder = new Object[8];
+    private void pubOrder(OrderMessage orderMessage, Object[] tpObjOrder) {
+        Arrays.fill(tpObjOrder, null);
+
         if (orderMessage instanceof Order order) {
-            tpObjOrder = new Object[] {
-                new c.Timespan(),
-                order.getTicker(),
-                order.getSide().toString(),
-                order.getPrice(),
-                order.getQty(),
-                order.getOrderId(),
-                order.getStpfId(),
-                order.getStpfInstruction().toString()
-            };
+            tpObjOrder[0] = new c.Timespan();
+            tpObjOrder[1] = order.getTicker();
+            tpObjOrder[2] = order.getSide().toString();
+            tpObjOrder[3] = order.getPrice();
+            tpObjOrder[4] = order.getQty();
+            tpObjOrder[5] = order.getOrderId();
+            tpObjOrder[6] = order.getStpfId();
+            tpObjOrder[7] = order.getStpfInstruction().toString();
 
         } else if (orderMessage instanceof OrderCancel orderCancel) {
-            tpObjOrder = new Object[] {
-                new c.Timespan(),
-                null,
-                "CANCEL",
-                null,
-                null,
-                orderCancel.getOrderId(),
-                null,
-                null
-            };
+            tpObjOrder[0] = new c.Timespan();
+            tpObjOrder[1] = null;
+            tpObjOrder[2] = "CANCEL";
+            tpObjOrder[3] = null;
+            tpObjOrder[4] = null;
+            tpObjOrder[5] = orderCancel.getOrderId();
+            tpObjOrder[6] = null;
+            tpObjOrder[7] = null;
         }
         kh.publishToTp("orders", tpObjOrder);
     }
 
-    private void pubTrade(Order order, ArrayList<Order> ordersTraded) {
-        for (Order trade : ordersTraded) {
-            long[] tradeIds = new long[] {trade.getOrderId(), order.getOrderId()};
-            String[] stpfIds = new String[] {trade.getStpfId(), order.getStpfId()};
+    private void pubTrade(Order order, ArrayList<Order> ordersTraded, Object[] tpObjTrade, long[] tradeIds, String[] stpfIds) {
+        Arrays.fill(tpObjTrade, null);
+        Arrays.fill(tradeIds, 0L);
+        Arrays.fill(stpfIds, null);
 
-            Object[] tpObjTrade = new Object[] {
-                new c.Timespan(),
-                trade.getTicker(),
-                trade.getPrice(),
-                trade.getQty(),
-                tradeIds,
-                stpfIds
-            };
+        for (Order trade : ordersTraded) {
+            tradeIds[0] = trade.getOrderId();
+            tradeIds[1] = order.getOrderId();
+
+            stpfIds[0] = trade.getStpfId();
+            stpfIds[1] = order.getStpfId();
+
+            tpObjTrade[0] = new c.Timespan();
+            tpObjTrade[1] = trade.getTicker();
+            tpObjTrade[2] = trade.getPrice();
+            tpObjTrade[3] = trade.getQty();
+            tpObjTrade[4] = tradeIds;
+            tpObjTrade[5] = stpfIds;
             kh.publishToTp("trades", tpObjTrade);
         }
     }
