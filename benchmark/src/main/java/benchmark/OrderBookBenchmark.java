@@ -66,18 +66,27 @@ public class OrderBookBenchmark {
   private OrderBook orderBook;
   private ArrayList<Order> orders;
   private ArrayList<Order> fills;
+  private String[] stpfIds;
 
   @Setup(Level.Iteration)
   public void setup() {
     orderBook = new OrderBook("AAPL");
     orders = new ArrayList<Order>(250_000);
-    fills = new ArrayList<Order>(100_000);
+    fills = new ArrayList<Order>(250_000);
+    stpfIds = new String[250_000];
 
     int min = 1;
     int max = 20;
+
+    int min2 = 10000;
+    int max2 = 99999;
     int totalOrders = 250_000;
-    String stpf_id = "A12345";
     STPFInstruction stpfInstruction = STPFInstruction.RRO;
+
+    for (int i = 0; i < totalOrders; i++) {
+      double id = min + ThreadLocalRandom.current().nextDouble() * (max - min);
+      stpfIds[i] = "A" + id;
+    }
 
     for (int i = 0; i < totalOrders; i++) {
       double qty = min + ThreadLocalRandom.current().nextDouble() * (max - min);
@@ -87,7 +96,7 @@ public class OrderBookBenchmark {
       qty = Math.round(qty * 100.0) / 100.0;
       price = Math.round(price * 100.0) / 100.0;
 
-      Order order = new Order("AAPL", 1, side, 1, null, STPFInstruction.RRO);
+      Order order = new Order("AAPL", 1, side, 1, stpfIds[i], STPFInstruction.RRO);
       order.setOrderReceivedTime();
       orders.add(order);
     }
@@ -102,14 +111,14 @@ public class OrderBookBenchmark {
     }
   }
 
-  // @Benchmark
-  // @BenchmarkMode(Mode.Throughput)
-  // @OutputTimeUnit(TimeUnit.SECONDS)
-  // public void addSingleOrder() {
-  //   Order order = new Order("AAPL", 1, OrderSide.BUY, 1, "A12345", STPFInstruction.RRO);
-  //   order.setOrderReceivedTime();
-  //   orderBook.add(order, fills);
-  // }
+  @Benchmark
+  @BenchmarkMode(Mode.Throughput)
+  @OutputTimeUnit(TimeUnit.SECONDS)
+  public void addSingleOrder() {
+    Order order = new Order("AAPL", 1, OrderSide.BUY, 1, "XXXXXX", STPFInstruction.RRO);
+    order.setOrderReceivedTime();
+    orderBook.add(order, fills);
+  }
 
   public static void main(String[] args) throws Exception {
     org.openjdk.jmh.Main.main(args);

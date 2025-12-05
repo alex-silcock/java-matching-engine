@@ -81,107 +81,138 @@ public class OrderBook {
         return;
     }
 
+
+    private Order skipStpfOrders(Order bestOrder, String stpfId, double orderPrice, OrderSide side) {
+        if (stpfId.equals("XXXXXX")) return bestOrder;
+
+        while (bestOrder != null && stpfId.equals(bestOrder.getStpfId())) {
+            if (side == OrderSide.BUY) {
+                bestOrder = this.asks.higher(bestOrder);
+                if (bestOrder == null || orderPrice < bestOrder.getPrice()) return null;
+            } else {
+                bestOrder = this.bids.higher(bestOrder);
+                if (bestOrder == null || orderPrice > bestOrder.getPrice()) return null;
+            }
+        }
+        return bestOrder;
+    } 
+
+    private int handleSell(Order incomingOrder, List<Order> fills) {
+        // First case - incomingOrder doesn't cross the spread, or no offers in the book
+        Order bestBidOrder = this.getBestBidOrder();
+        double orderPrice = incomingOrder.getPrice();
+        String stpfId = incomingOrder.getStpfId();
+
+        if (bestBidOrder == null || orderPrice > bestBidOrder.getPrice()) {
+            this.asks.add(incomingOrder);
+            return 0;
+        }
+
+        // Interlude - skip matching stpfid orders
+        bestBidOrder = this.skipStpfOrders(bestBidOrder, stpfId, orderPrice, OrderSide.BUY);
+        // if no possible trades, then for now add the order to the book
+        if (bestBidOrder == null) {
+            this.asks.add(incomingOrder);
+            return 0;
+        }
+
+        // Now, the order will have crossed the spread
+        double qtyToTrade = incomingOrder.getQty();
+
+        while (qtyToTrade > 0) {
+            double bestBidOrderQty = bestBidOrder.getQty();
+            // First case - the incoming order size >= resting offer order
+            // therefore the resting order is fully consumed, and added as a fill
+            // qtyToTrade is updated and the incomingOrder then looks for the next order
+            // to trade with
+            if (qtyToTrade >= bestBidOrderQty) {
+                this.bids.remove(bestBidOrder);
+                fills.add(bestBidOrder);
+                qtyToTrade -= bestBidOrderQty;
+                incomingOrder.setQty(qtyToTrade);
+                bestBidOrder = this.getBestBidOrder();
+            } 
+            // Second case - incoming order is going to be fully filled by a resting offer
+            else if (qtyToTrade < bestBidOrderQty) {
+                bestBidOrder.reduceQty(qtyToTrade);
+                Order copy = new Order(this.ticker, qtyToTrade, OrderSide.SELL, orderPrice, stpfId, incomingOrder.getStpfInstruction());
+                copy.orderId = bestBidOrder.orderId;
+                fills.add(copy);
+                qtyToTrade = 0;
+                return fills.size();
+            }
+
+            // Find the next tradeable order
+            bestBidOrder = this.skipStpfOrders(bestBidOrder, stpfId, orderPrice, OrderSide.BUY);
+            if (bestBidOrder == null || orderPrice > bestBidOrder.getPrice()) {
+                this.asks.add(incomingOrder);
+                return fills.size();
+            }
+        }
+
+        return fills.size();
+    }
+
+    private int handleBuy(Order incomingOrder, List<Order> fills) {
+        // First case - incomingOrder doesn't cross the spread, or no offers in the book
+        Order bestOfferOrder = this.getBestOfferOrder();
+        double orderPrice = incomingOrder.getPrice();
+        String stpfId = incomingOrder.getStpfId();
+
+        if (bestOfferOrder == null || orderPrice < bestOfferOrder.getPrice()) {
+            this.bids.add(incomingOrder);
+            return 0;
+        }
+
+        // Interlude - skip matching stpfid orders
+        bestOfferOrder = this.skipStpfOrders(bestOfferOrder, stpfId, orderPrice, OrderSide.BUY);
+        // if no possible trades, then for now add the order to the book
+        if (bestOfferOrder == null) {
+            this.bids.add(incomingOrder);
+            return 0;
+        }
+
+        // Now, the order will have crossed the spread
+        double qtyToTrade = incomingOrder.getQty();
+
+        while (qtyToTrade > 0) {
+            double bestOfferOrderQty = bestOfferOrder.getQty();
+            // First case - the incoming order size >= resting offer order
+            // therefore the resting order is fully consumed, and added as a fill
+            // qtyToTrade is updated and the incomingOrder then looks for the next order
+            // to trade with
+            if (qtyToTrade >= bestOfferOrderQty) {
+                this.asks.remove(bestOfferOrder);
+                fills.add(bestOfferOrder);
+                qtyToTrade -= bestOfferOrderQty;
+                incomingOrder.setQty(qtyToTrade);
+                bestOfferOrder = this.getBestOfferOrder();
+            } 
+            // Second case - incoming order is going to be fully filled by a resting offer
+            else if (qtyToTrade < bestOfferOrderQty) {
+                bestOfferOrder.reduceQty(qtyToTrade);
+                Order copy = new Order(this.ticker, qtyToTrade, OrderSide.SELL, orderPrice, stpfId, incomingOrder.getStpfInstruction());
+                copy.orderId = bestOfferOrder.orderId;
+                fills.add(copy);
+                qtyToTrade = 0;
+                return fills.size();
+            }
+
+            // Find the next tradeable order
+            bestOfferOrder = this.skipStpfOrders(bestOfferOrder, stpfId, orderPrice, OrderSide.BUY);
+            if (bestOfferOrder == null || orderPrice < bestOfferOrder.getPrice()) {
+                this.bids.add(incomingOrder);
+                return fills.size();
+            }
+        }
+
+        return fills.size();
+    }
+
+
     public int add(Order incomingOrder, List<Order> fills) {
         fills.clear();
-
         OrderSide side = incomingOrder.getSide();
-
-        // buy side
-        if (side == OrderSide.BUY) {
-            // no cross
-            Order bestOfferOrder = this.getBestOfferOrder();
-            if (bestOfferOrder == null || incomingOrder.getPrice() < bestOfferOrder.getPrice()) {
-                this.bids.add(incomingOrder);
-                return 0;
-            }
-            // skip stfp matching orders
-            if (incomingOrder.getStpfId() != null) {
-                while (bestOfferOrder != null && incomingOrder.getStpfId().equals(bestOfferOrder.getStpfId())) {
-                    bestOfferOrder = this.asks.higher(bestOfferOrder);
-                }
-            }
-
-            if (bestOfferOrder == null) {
-                this.bids.add(incomingOrder);
-                return 0;
-            }
-
-            // matching loop
-            double quantityLeftToTrade = incomingOrder.getQty();
-            double bestOfferOrderQty = bestOfferOrder.getQty();
-
-            while (quantityLeftToTrade > 0) {
-                // full consumption
-                if (quantityLeftToTrade >= bestOfferOrderQty) {
-                    this.asks.remove(bestOfferOrder);
-                    fills.add(bestOfferOrder);
-                    quantityLeftToTrade -= bestOfferOrderQty;
-                    incomingOrder.setQty(quantityLeftToTrade);
-
-                    bestOfferOrder = this.getBestOfferOrder();
-                    if (bestOfferOrder == null) {
-                        this.bids.add(incomingOrder);
-                        return fills.size();
-                    }
-                } 
-                // partial fill - incoming order added to bids
-                // improvement here: FOK
-                else {
-                    fills.add(bestOfferOrder);
-                    bestOfferOrder.reduceQty(quantityLeftToTrade);
-                    return fills.size();
-                }
-
-            }
-            return fills.size();
-        } else {
-            // sell side
-            // no cross
-            Order bestBidOrder = this.getBestBidOrder();
-            if (bestBidOrder == null || incomingOrder.getPrice() > bestBidOrder.getPrice()) {
-                this.asks.add(incomingOrder);
-                return 0;
-            }
-            // skip stfp matching orders
-            if (incomingOrder.getStpfId() != null) {
-                while (bestBidOrder != null && incomingOrder.getStpfId().equals(bestBidOrder.getStpfId())) {
-                    bestBidOrder = this.asks.higher(bestBidOrder);
-                }
-            }
-
-            if (bestBidOrder == null) {
-                this.asks.add(incomingOrder);
-                return 0;
-            }
-
-            // matching loop
-            double quantityLeftToTrade = incomingOrder.getQty();
-            double bestBidOrderQty = bestBidOrder.getQty();
-
-            while (quantityLeftToTrade > 0) {
-                // full consumption
-                if (quantityLeftToTrade >= bestBidOrderQty) {
-                    this.bids.remove(bestBidOrder);
-                    fills.add(bestBidOrder);
-                    quantityLeftToTrade -= bestBidOrderQty;
-                    incomingOrder.setQty(quantityLeftToTrade);
-
-                    bestBidOrder = this.getBestBidOrder();
-                    if (bestBidOrder == null) {
-                        this.asks.add(incomingOrder);
-                        return fills.size();
-                    }
-                } 
-                // partial fill - incoming order added to bids
-                // improvement here: FOK
-                else {
-                    fills.add(bestBidOrder);
-                    bestBidOrder.reduceQty(quantityLeftToTrade);
-                    return fills.size();
-                }
-
-            }
-            return fills.size();
-        }
+        return side == OrderSide.BUY ? this.handleBuy(incomingOrder, fills) : this.handleSell(incomingOrder, fills);
     }
 }

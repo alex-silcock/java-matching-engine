@@ -69,20 +69,19 @@ public class Order extends OrderMessage implements Comparable<Order>{
 
     @Override
     public int compareTo(Order order) {
-        int priceComparison = Double.compare(this.price, order.getPrice());
+        int priceComparison = Double.compare(this.price, order.price);
         if (priceComparison != 0) {
             if (Objects.equals(order.getSide(), OrderSide.BUY)) {
-                return priceComparison * -1;
-            } else {
-                return priceComparison;
+                return -priceComparison;
             }
+            return priceComparison;
         }
         // default to return on Snowflake ID - time ordered
-        return Long.compare(this.getOrderId(), order.getOrderId());
+        return Long.compare(this.orderId, order.orderId);
     }
 
     @Override
     public String toString() {
-        return String.format("Order[%s %.2f %s %.2f]", ticker, qty, side, price);
+        return String.format("Order[%s Q-%.2f S-%s P-%.2f]", ticker, qty, side, price);
     }
 }

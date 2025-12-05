@@ -52,7 +52,9 @@ public class MarketListener {
                 if (message instanceof Order order) {
                     int fillCount = orderBook.add(order, fills);
                     pubOrder(order, tpObjOrder);
-                    if (fillCount > 0) {pubTrade(order, fills, tpObjTrade, tradeIds, stpfIds);}
+                    if (fillCount > 0) {
+                        pubTrade(order, fills, tpObjTrade, tradeIds, stpfIds);
+                    }
                 } else if (message instanceof OrderCancel orderCancel) {
                     // pubCancel(orderCancel);
                     orderBook.cancel(orderCancel); // should return true if able to cancel - if order has not been touched

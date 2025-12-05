@@ -38,7 +38,7 @@ public class Main {
             int min = 1;
             int max = 20;
             int totalOrders = 250;
-            String stpf_id = "A12345";
+            String stpf_id = "XXXXXX";
             STPFInstruction stpfInstruction = STPFInstruction.RRO;
 
             for (int i = 0; i < totalOrders; i++) {
