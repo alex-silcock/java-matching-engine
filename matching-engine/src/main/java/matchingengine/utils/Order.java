@@ -77,8 +77,7 @@ public final class Order extends OrderMessage implements Comparable<Order>{
             return priceComparison;
         }
         // default to return on Snowflake ID - time ordered
-        // return Long.compare(this.getOrderId(), order.getOrderId());
-        return Long.compare(this.getOrderId, order.getOrderId());
+        return Long.compare(this.getOrderId(), order.getOrderId());
     }
 
     @Override
