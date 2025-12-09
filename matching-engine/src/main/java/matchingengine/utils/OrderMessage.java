@@ -7,13 +7,21 @@ import lombok.Setter;
 
 
 @Getter @Setter
-public class OrderMessage {
+public abstract class OrderMessage{
     private LocalDateTime orderReceivedTime;
-    protected long orderId;
+    private long orderId;
 
-    public int encode(UnsafeBuffer buffer, int offset) {return -1;}
+    public abstract int encode(UnsafeBuffer buffer, int offset);
 
     public void setOrderReceivedTime() {
         this.orderReceivedTime = LocalDateTime.now();
+    }
+
+    public void setOrderId(long orderId) {
+        this.orderId = orderId;
+    }
+
+    public long getOrderId() {
+        return this.orderId;
     }
 }

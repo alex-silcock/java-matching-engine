@@ -9,15 +9,15 @@ import org.agrona.concurrent.UnsafeBuffer;
 import lombok.Getter;
 
 @Getter
-public class OrderCancel extends OrderMessage{
+public final class OrderCancel extends OrderMessage{
     public OrderCancel(long orderId) {
-        this.orderId = orderId;
+        this.setOrderId(orderId);
     }
 
     public int encode(UnsafeBuffer buffer, int offset) {
         OrderCancelEncoder encoder = new OrderCancelEncoder();
         encoder.wrap(buffer, offset);
-        encoder.orderId(orderId);
+        encoder.orderId(this.getOrderId());
         return encoder.encodedLength();
     }
 

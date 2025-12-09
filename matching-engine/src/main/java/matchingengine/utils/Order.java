@@ -15,13 +15,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class Order extends OrderMessage implements Comparable<Order>{
-    public final String ticker;
+public final class Order extends OrderMessage implements Comparable<Order>{
+    public String ticker;
     private double qty;
-    private final OrderSide side;
-    private final double price;
-    private final String STPF_ID;
-    private final STPFInstruction STPF_Instruction;
+    private OrderSide side;
+    private double price;
+    private String STPF_ID;
+    private STPFInstruction STPF_Instruction;
 
     public Order(String ticker, double qty, OrderSide side, double price, String stpfId, STPFInstruction stpfInstr) {
         this.ticker = ticker;
@@ -45,7 +45,7 @@ public class Order extends OrderMessage implements Comparable<Order>{
     }
 
     public int encode(UnsafeBuffer buffer, int offset) {
-        OrderEncoder encoder = new OrderEncoder();
+        OrderEncoder encoder = new OrderEncoder(); // TODO - could be reused
         encoder.wrap(buffer, offset);
         encoder.ticker(ticker);
         encoder.qty(qty);
@@ -71,13 +71,14 @@ public class Order extends OrderMessage implements Comparable<Order>{
     public int compareTo(Order order) {
         int priceComparison = Double.compare(this.price, order.price);
         if (priceComparison != 0) {
-            if (Objects.equals(order.getSide(), OrderSide.BUY)) {
+            if (order.getSide() == OrderSide.BUY) {
                 return -priceComparison;
             }
             return priceComparison;
         }
         // default to return on Snowflake ID - time ordered
-        return Long.compare(this.orderId, order.orderId);
+        // return Long.compare(this.getOrderId(), order.getOrderId());
+        return Long.compare(this.getOrderId, order.getOrderId());
     }
 
     @Override

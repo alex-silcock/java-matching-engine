@@ -1,0 +1,269 @@
+# JMH version: 1.37
+# VM version: JDK 25.0.1, Java HotSpot(TM) 64-Bit Server VM, 25.0.1+8-LTS-27
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-25.jdk/Contents/Home/bin/java
+# VM options: <none>
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 3 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: benchmark.OrderBookBenchmark.addSingleOrder
+
+# Run progress: 0.00% complete, ETA 00:00:40
+# Fork: 1 of 2
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/alexsilcock/Documents/java-matching-engine/benchmark/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 60134348.229 ops/s
+# Warmup Iteration   2: 63606275.129 ops/s
+# Warmup Iteration   3: 69388366.996 ops/s
+# Warmup Iteration   4: 59065863.348 ops/s
+# Warmup Iteration   5: 54045584.088 ops/s
+Iteration   1: 68339392.050 ops/s
+                 gc.alloc.rate:      13931.523 MB/sec
+                 gc.alloc.rate.norm: 220.138 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            26.000 ms
+
+Iteration   2: 67747895.813 ops/s
+                 gc.alloc.rate:      13777.828 MB/sec
+                 gc.alloc.rate.norm: 220.175 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            34.000 ms
+
+Iteration   3: 66341575.456 ops/s
+                 gc.alloc.rate:      13534.229 MB/sec
+                 gc.alloc.rate.norm: 220.270 B/op
+                 gc.count:           7.000 counts
+                 gc.time:            25.000 ms
+
+Iteration   4: 66494117.439 ops/s
+                 gc.alloc.rate:      13622.185 MB/sec
+                 gc.alloc.rate.norm: 220.272 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            22.000 ms
+
+Iteration   5: 66882752.923 ops/s
+                 gc.alloc.rate:      13712.863 MB/sec
+                 gc.alloc.rate.norm: 220.248 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            21.000 ms
+
+
+# Run progress: 25.00% complete, ETA 00:00:31
+# Fork: 2 of 2
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/alexsilcock/Documents/java-matching-engine/benchmark/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 66206602.849 ops/s
+# Warmup Iteration   2: 63132777.352 ops/s
+# Warmup Iteration   3: 66156053.107 ops/s
+# Warmup Iteration   4: 66463958.781 ops/s
+# Warmup Iteration   5: 66113030.028 ops/s
+Iteration   1: 66362240.500 ops/s
+                 gc.alloc.rate:      13533.129 MB/sec
+                 gc.alloc.rate.norm: 220.268 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            22.000 ms
+
+Iteration   2: 66468903.851 ops/s
+                 gc.alloc.rate:      13627.894 MB/sec
+                 gc.alloc.rate.norm: 220.265 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            22.000 ms
+
+Iteration   3: 66386786.449 ops/s
+                 gc.alloc.rate:      13620.305 MB/sec
+                 gc.alloc.rate.norm: 220.271 B/op
+                 gc.count:           9.000 counts
+                 gc.time:            23.000 ms
+
+Iteration   4: 66266233.767 ops/s
+                 gc.alloc.rate:      13595.286 MB/sec
+                 gc.alloc.rate.norm: 220.278 B/op
+                 gc.count:           27.000 counts
+                 gc.time:            28.000 ms
+
+Iteration   5: 66490340.345 ops/s
+                 gc.alloc.rate:      13642.609 MB/sec
+                 gc.alloc.rate.norm: 220.278 B/op
+                 gc.count:           25.000 counts
+                 gc.time:            26.000 ms
+
+
+
+Result "benchmark.OrderBookBenchmark.addSingleOrder":
+  66778023.859 ±(99.9%) 1060310.304 ops/s [Average]
+  (min, avg, max) = (66266233.767, 66778023.859, 68339392.050), stdev = 701329.616
+  CI (99.9%): [65717713.555, 67838334.163] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addSingleOrder:gc.alloc.rate":
+  13659.785 ±(99.9%) 182.291 MB/sec [Average]
+  (min, avg, max) = (13533.129, 13659.785, 13931.523), stdev = 120.574
+  CI (99.9%): [13477.494, 13842.076] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addSingleOrder:gc.alloc.rate.norm":
+  220.246 ±(99.9%) 0.074 B/op [Average]
+  (min, avg, max) = (220.138, 220.246, 220.278), stdev = 0.049
+  CI (99.9%): [220.172, 220.320] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addSingleOrder:gc.count":
+  116.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (7.000, 11.600, 27.000), stdev = 7.619
+  CI (99.9%): [116.000, 116.000] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addSingleOrder:gc.time":
+  249.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (21.000, 24.900, 34.000), stdev = 3.929
+  CI (99.9%): [249.000, 249.000] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.1, Java HotSpot(TM) 64-Bit Server VM, 25.0.1+8-LTS-27
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-25.jdk/Contents/Home/bin/java
+# VM options: <none>
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 3 threads, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: benchmark.OrderBookBenchmark.addOrders
+
+# Run progress: 50.00% complete, ETA 00:00:21
+# Fork: 1 of 2
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/alexsilcock/Documents/java-matching-engine/benchmark/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 3.421 ±(99.9%) 15.000 ms/op
+# Warmup Iteration   2: 3.705 ±(99.9%) 1.123 ms/op
+# Warmup Iteration   3: 4.910 ±(99.9%) 0.128 ms/op
+# Warmup Iteration   4: 3.925 ±(99.9%) 0.619 ms/op
+# Warmup Iteration   5: 3.453 ±(99.9%) 10.840 ms/op
+Iteration   1: 4.076 ±(99.9%) 4.967 ms/op
+                 gc.alloc.rate:      287.334 MB/sec
+                 gc.alloc.rate.norm: 422841.911 B/op
+                 gc.count:           2.000 counts
+                 gc.time:            10.000 ms
+
+Iteration   2: 4.569 ±(99.9%) 1.061 ms/op
+                 gc.alloc.rate:      272.750 MB/sec
+                 gc.alloc.rate.norm: 475104.084 B/op
+                 gc.count:           4.000 counts
+                 gc.time:            60.000 ms
+
+Iteration   3: 3.912 ±(99.9%) 0.425 ms/op
+                 gc.alloc.rate:      285.552 MB/sec
+                 gc.alloc.rate.norm: 406959.545 B/op
+                 gc.count:           1.000 counts
+                 gc.time:            16.000 ms
+
+Iteration   4: 2.849 ±(99.9%) 6.578 ms/op
+                 gc.alloc.rate:      287.870 MB/sec
+                 gc.alloc.rate.norm: 295199.438 B/op
+                 gc.count:           4.000 counts
+                 gc.time:            17.000 ms
+
+Iteration   5: 3.274 ±(99.9%) 6.745 ms/op
+                 gc.alloc.rate:      289.820 MB/sec
+                 gc.alloc.rate.norm: 340543.282 B/op
+                 gc.count:           2.000 counts
+                 gc.time:            13.000 ms
+
+
+# Run progress: 75.00% complete, ETA 00:00:10
+# Fork: 2 of 2
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/Users/alexsilcock/Documents/java-matching-engine/benchmark/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 4.721 ±(99.9%) 4.284 ms/op
+# Warmup Iteration   2: 4.175 ±(99.9%) 3.141 ms/op
+# Warmup Iteration   3: 3.604 ±(99.9%) 4.647 ms/op
+# Warmup Iteration   4: 3.688 ±(99.9%) 20.912 ms/op
+# Warmup Iteration   5: 4.540 ±(99.9%) 1.350 ms/op
+Iteration   1: 5.086 ±(99.9%) 0.440 ms/op
+                 gc.alloc.rate:      287.074 MB/sec
+                 gc.alloc.rate.norm: 528455.221 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   2: 5.445 ±(99.9%) 5.392 ms/op
+                 gc.alloc.rate:      284.713 MB/sec
+                 gc.alloc.rate.norm: 563411.950 B/op
+                 gc.count:           1.000 counts
+                 gc.time:            11.000 ms
+
+Iteration   3: 5.115 ±(99.9%) 0.377 ms/op
+                 gc.alloc.rate:      289.046 MB/sec
+                 gc.alloc.rate.norm: 531081.201 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   4: 5.484 ±(99.9%) 2.577 ms/op
+                 gc.alloc.rate:      285.867 MB/sec
+                 gc.alloc.rate.norm: 569529.722 B/op
+                 gc.count:           1.000 counts
+                 gc.time:            12.000 ms
+
+Iteration   5: 4.062 ±(99.9%) 9.009 ms/op
+                 gc.alloc.rate:      283.284 MB/sec
+                 gc.alloc.rate.norm: 420029.323 B/op
+                 gc.count:           1.000 counts
+                 gc.time:            24.000 ms
+
+
+
+Result "benchmark.OrderBookBenchmark.addOrders":
+  4.387 ±(99.9%) 1.372 ms/op [Average]
+  (min, avg, max) = (2.849, 4.387, 5.484), stdev = 0.907
+  CI (99.9%): [3.016, 5.759] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addOrders:gc.alloc.rate":
+  285.331 ±(99.9%) 7.314 MB/sec [Average]
+  (min, avg, max) = (272.750, 285.331, 289.820), stdev = 4.838
+  CI (99.9%): [278.017, 292.645] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addOrders:gc.alloc.rate.norm":
+  455315.568 ±(99.9%) 142235.110 B/op [Average]
+  (min, avg, max) = (295199.438, 455315.568, 569529.722), stdev = 94079.719
+  CI (99.9%): [313080.458, 597550.678] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addOrders:gc.count":
+  16.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (≈ 0, 1.600, 4.000), stdev = 1.430
+  CI (99.9%): [16.000, 16.000] (assumes normal distribution)
+
+Secondary result "benchmark.OrderBookBenchmark.addOrders:gc.time":
+  163.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (≈ 0, 16.300, 60.000), stdev = 16.991
+  CI (99.9%): [163.000, 163.000] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:00:42
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                              Mode  Cnt         Score         Error   Units
+OrderBookBenchmark.addSingleOrder                     thrpt   10  66778023.859 ± 1060310.304   ops/s
+OrderBookBenchmark.addSingleOrder:gc.alloc.rate       thrpt   10     13659.785 ±     182.291  MB/sec
+OrderBookBenchmark.addSingleOrder:gc.alloc.rate.norm  thrpt   10       220.246 ±       0.074    B/op
+OrderBookBenchmark.addSingleOrder:gc.count            thrpt   10       116.000                counts
+OrderBookBenchmark.addSingleOrder:gc.time             thrpt   10       249.000                    ms
+OrderBookBenchmark.addOrders                           avgt   10         4.387 ±       1.372   ms/op
+OrderBookBenchmark.addOrders:gc.alloc.rate             avgt   10       285.331 ±       7.314  MB/sec
+OrderBookBenchmark.addOrders:gc.alloc.rate.norm        avgt   10    455315.568 ±  142235.110    B/op
+OrderBookBenchmark.addOrders:gc.count                  avgt   10        16.000                counts
+OrderBookBenchmark.addOrders:gc.time                   avgt   10       163.000                    ms

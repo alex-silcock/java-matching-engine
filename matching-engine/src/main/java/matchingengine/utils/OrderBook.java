@@ -136,7 +136,7 @@ public class OrderBook {
             else if (qtyToTrade < bestBidOrderQty) {
                 bestBidOrder.reduceQty(qtyToTrade);
                 Order copy = new Order(this.ticker, qtyToTrade, OrderSide.SELL, orderPrice, stpfId, incomingOrder.getStpfInstruction());
-                copy.orderId = bestBidOrder.orderId;
+                copy.setOrderId(bestBidOrder.getOrderId());
                 fills.add(copy);
                 qtyToTrade = 0;
                 return fills.size();
@@ -192,7 +192,7 @@ public class OrderBook {
             else if (qtyToTrade < bestOfferOrderQty) {
                 bestOfferOrder.reduceQty(qtyToTrade);
                 Order copy = new Order(this.ticker, qtyToTrade, OrderSide.SELL, orderPrice, stpfId, incomingOrder.getStpfInstruction());
-                copy.orderId = bestOfferOrder.orderId;
+                copy.setOrderId(bestOfferOrder.getOrderId());
                 fills.add(copy);
                 qtyToTrade = 0;
                 return fills.size();

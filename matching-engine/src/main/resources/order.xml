@@ -26,6 +26,11 @@
             <validValue name="RRO">1</validValue>
             <validValue name="RBO">2</validValue>
         </enum>
+        <enum name="OrderType" encodingType="uint8">
+            <validValue name="MARKET">0</validValue>
+            <validValue name="FOK">1</validValue>
+            <validValue name="LIMIT">2</validValue>
+        </enum>
     </sbe:types>
 
     <sbe:message name="Order" id="1">
@@ -35,5 +40,6 @@
         <field name="price" id="4" type="price"/>
         <field name="stpfId" id="5" type="STPFId"/>
         <field name="stpfInstruction" id="6" type="STPFInstruction"/>
+        <!-- <field name="orderType" id="7" type="OrderType"/> -->
     </sbe:message>
 </sbe:messageSchema>

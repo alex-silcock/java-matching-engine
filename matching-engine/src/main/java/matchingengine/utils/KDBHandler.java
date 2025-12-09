@@ -17,17 +17,20 @@ public class KDBHandler {
         }
     }
 
-    private static c kdbConn;
-    private static KDBTarget target;
+    private final c kdbConn;
+    private final KDBTarget target;
 
     public KDBHandler(KDBTarget target) {
         this.target = target;
+        c temp = null;
         try {
-            this.kdbConn = new c("localhost", target.getPort());
-            System.out.println(String.format("Connected to KDB on port %d", target.getPort()));
+            temp = new c("localhost", target.getPort());
+            System.out.println("Connected to KDB on port ");
+            System.out.println(target.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
+        this.kdbConn = temp;
     }
 
     public c.Flip query(String query) {
@@ -46,10 +49,5 @@ public class KDBHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main (String[] args) {
-        KDBHandler kh = new KDBHandler(KDBTarget.RDB);
-        System.out.println(kh.query(".l2[`AAPL]"));
     }
 }
